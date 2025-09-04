@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Medical Store Management System Design System */
+
+@layer base {
+  :root {
+    /* Core Background & Text */
+    --background: 0 0% 99%;
+    --foreground: 215 25% 27%;
+
+    /* Cards & Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+
+    /* Popover & Overlays */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+
+    /* Medical Blue Primary */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 217 91% 85%;
+    --primary-dark: 217 91% 45%;
+
+    /* Professional Secondary */
+    --secondary: 215 20% 95%;
+    --secondary-foreground: 215 25% 35%;
+
+    /* Muted Elements */
+    --muted: 215 15% 96%;
+    --muted-foreground: 215 15% 55%;
+
+    /* Accent Colors */
+    --accent: 215 20% 92%;
+    --accent-foreground: 215 25% 27%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 90%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 38 92% 85%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-light: 0 84% 90%;
+
+    /* Borders & Inputs */
+    --border: 215 15% 88%;
+    --input: 215 15% 88%;
+    --ring: 217 91% 60%;
+
+    /* Shadows & Effects */
+    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-floating: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-dark)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 76% 30%));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(215 10% 98%));
+
+    /* Animations */
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Core Background & Text */
+    --background: 215 28% 17%;
+    --foreground: 0 0% 95%;
+
+    /* Cards & Surfaces */
+    --card: 215 28% 17%;
+    --card-foreground: 0 0% 95%;
+
+    /* Popover & Overlays */
+    --popover: 215 28% 17%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Medical Blue Primary */
+    --primary: 217 91% 70%;
+    --primary-foreground: 215 28% 17%;
+    --primary-light: 217 91% 85%;
+    --primary-dark: 217 91% 55%;
+
+    /* Professional Secondary */
+    --secondary: 215 25% 25%;
+    --secondary-foreground: 0 0% 90%;
+
+    /* Muted Elements */
+    --muted: 215 25% 25%;
+    --muted-foreground: 215 15% 65%;
+
+    /* Accent Colors */
+    --accent: 215 25% 25%;
+    --accent-foreground: 0 0% 90%;
+
+    /* Status Colors remain the same for consistency */
+    --success: 142 76% 45%;
+    --warning: 38 92% 60%;
+    --destructive: 0 84% 70%;
+
+    /* Borders & Inputs */
+    --border: 215 25% 25%;
+    --input: 215 25% 25%;
+    --ring: 217 91% 70%;
+
+    --sidebar-background: 215 28% 12%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 217 91% 70%;
+    --sidebar-primary-foreground: 215 28% 17%;
+    --sidebar-accent: 215 25% 20%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 215 25% 20%;
+    --sidebar-ring: 217 91% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Medical Card Styles */
+  .medical-card {
+    @apply bg-card border border-border rounded-xl shadow-[var(--shadow-card)] transition-[var(--transition-smooth)];
+  }
+  
+  .medical-card:hover {
+    @apply shadow-[var(--shadow-floating)];
+  }
+
+  /* Stats Card Variants */
+  .stats-card-primary {
+    @apply medical-card bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20;
+  }
+  
+  .stats-card-success {
+    @apply medical-card bg-gradient-to-br from-success/5 to-success/10 border-success/20;
+  }
+  
+  .stats-card-warning {
+    @apply medical-card bg-gradient-to-br from-warning/5 to-warning/10 border-warning/20;
+  }
+
+  /* Search Bar Styling */
+  .search-enhanced {
+    @apply relative bg-card border border-border rounded-xl shadow-[var(--shadow-soft)] focus-within:shadow-[var(--shadow-card)] focus-within:border-primary/50 transition-[var(--transition-smooth)];
+  }
+
+  /* Navigation Styles */
+  .nav-item {
+    @apply flex items-center px-4 py-3 rounded-lg transition-[var(--transition-smooth)] text-muted-foreground hover:text-foreground hover:bg-accent/50;
+  }
+  
+  .nav-item.active {
+    @apply bg-primary text-primary-foreground shadow-[var(--shadow-soft)];
+  }
+
+  /* Table Styles */
+  .medical-table {
+    @apply w-full border-collapse bg-card rounded-xl overflow-hidden shadow-[var(--shadow-card)];
+  }
+  
+  .medical-table th {
+    @apply bg-muted/50 px-6 py-4 text-left font-semibold text-foreground border-b border-border;
+  }
+  
+  .medical-table td {
+    @apply px-6 py-4 border-b border-border/50 transition-[var(--transition-smooth)];
+  }
+  
+  .medical-table tr:hover td {
+    @apply bg-accent/30;
+  }
+}

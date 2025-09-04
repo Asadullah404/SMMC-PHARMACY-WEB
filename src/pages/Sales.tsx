@@ -1,0 +1,350 @@
+// Sales.tsx
+import { useState, useEffect } from "react";
+import { ShoppingCart, Plus, Minus, Receipt, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SearchBar } from "@/components/SearchBar";
+import { db } from "@/firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+  doc,
+  updateDoc,
+  DocumentData,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
+
+// ------------------ TYPES ------------------
+
+export interface Medicine {
+  id: string;
+  name: string;
+  costPrice: number;
+  retailPrice: number;
+  quantity: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+interface CartItem {
+  medicineId: string;
+  medicineName: string;
+  quantity: number;
+  price: number;
+  cost: number;
+  medicine: Medicine;
+}
+
+interface Sale {
+  id: string;
+  amount: number;
+  profit: number;
+  date: string;
+  timestamp: Timestamp;
+  medicineId: string;
+  medicineName: string;
+  quantity: number;
+  costPrice: number;
+  retailPrice: number;
+}
+
+// ------------------ COMPONENT ------------------
+
+export default function Sales() {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
+
+  // Fetch today's sales
+  useEffect(() => {
+    const fetchSales = async () => {
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const q = query(collection(db, "sales"), where("date", "==", today));
+      const snapshot = await getDocs(q);
+
+      const salesData: Sale[] = snapshot.docs.map(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            amount: Number(data.amount ?? 0),
+            profit: Number(data.profit ?? 0),
+            date: data.date ?? "",
+            timestamp: data.timestamp as Timestamp,
+            medicineId: data.medicine_id,
+            medicineName: data.medicine_name,
+            quantity: Number(data.quantity ?? 0),
+            costPrice: Number(data.cost_price ?? 0),
+            retailPrice: Number(data.retail_price ?? 0),
+          };
+        }
+      );
+
+      setTodaysSales(salesData);
+    };
+    fetchSales();
+  }, []);
+
+  // Add medicine to cart
+  const addToCart = (medicine: any, quantity: number = 1) => {
+    const normalizedMedicine: Medicine = {
+      id: medicine.id,
+      name: medicine.name,
+      costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
+      retailPrice: Number(medicine.retail_price ?? medicine.retailPrice ?? 0),
+      quantity: Number(medicine.quantity ?? 0),
+      createdAt: medicine.created_at,
+      updatedAt: medicine.updated_at,
+    };
+
+    const existingItem = cart.find(
+      (item) => item.medicineId === normalizedMedicine.id
+    );
+    if (existingItem) {
+      setCart(
+        cart.map((item) =>
+          item.medicineId === normalizedMedicine.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      );
+    } else {
+      const newItem: CartItem = {
+        medicineId: normalizedMedicine.id,
+        medicineName: normalizedMedicine.name,
+        quantity,
+        price: normalizedMedicine.retailPrice,
+        cost: normalizedMedicine.costPrice,
+        medicine: normalizedMedicine,
+      };
+      setCart([...cart, newItem]);
+    }
+  };
+
+  // Update quantity in cart
+  const updateQuantity = (medicineId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setCart(cart.filter((item) => item.medicineId !== medicineId));
+    } else {
+      setCart(
+        cart.map((item) =>
+          item.medicineId === medicineId
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    }
+  };
+
+  // Totals
+  const getTotalAmount = () =>
+    cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const getTotalProfit = () =>
+    cart.reduce(
+      (sum, item) => sum + (item.price - item.cost) * item.quantity,
+      0
+    );
+
+  // Process sale
+  const processSale = async () => {
+    if (cart.length === 0) return;
+
+    for (const item of cart) {
+      const amount = item.price * item.quantity;
+      const profit = (item.price - item.cost) * item.quantity;
+
+      const saleDoc = {
+        amount,
+        profit,
+        date: new Date().toISOString().split("T")[0],
+        timestamp: Timestamp.now(),
+        medicine_id: item.medicineId,
+        medicine_name: item.medicineName,
+        quantity: item.quantity,
+        cost_price: item.cost,
+        retail_price: item.price,
+      };
+
+      await addDoc(collection(db, "sales"), saleDoc);
+
+      // Update medicine stock
+      const medicineRef = doc(db, "medicines", item.medicineId);
+      await updateDoc(medicineRef, {
+        quantity: item.medicine.quantity - item.quantity,
+      });
+    }
+
+    setCart([]);
+  };
+
+  // ------------------ JSX ------------------
+
+  return (
+    <div className="p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side */}
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold text-foreground">
+            Sales Management
+          </h1>
+
+          {/* Medicine Search */}
+          <div className="medical-card p-4">
+            <h3 className="font-semibold text-foreground mb-3">
+              Add Medicine to Cart
+            </h3>
+            <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
+          </div>
+
+          {/* Shopping Cart */}
+          <div className="medical-card">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-semibold text-foreground">Shopping Cart</h3>
+              <ShoppingCart className="w-5 h-5 text-primary" />
+            </div>
+            <div className="p-4">
+              {cart.length > 0 ? (
+                <>
+                  {cart.map((item) => (
+                    <div
+                      key={item.medicineId}
+                      className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">
+                          {item.medicineName}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                           PKR {item.price} each
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            updateQuantity(item.medicineId, item.quantity - 1)
+                          }
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <span className="w-8 text-center font-medium">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            updateQuantity(item.medicineId, item.quantity + 1)
+                          }
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="font-medium text-foreground">
+                           PKR {(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="border-t border-border pt-3 mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-muted-foreground">Subtotal:</span>
+                      <span className="font-medium text-foreground">
+                         PKR {getTotalAmount().toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-muted-foreground">Profit:</span>
+                      <span className="font-medium text-success">
+                         PKR {getTotalProfit().toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex space-x-3">
+                      <Button onClick={processSale} className="flex-1 gap-2">
+                        <Receipt className="w-4 h-4" /> Process Sale
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <RotateCcw className="w-4 h-4" /> Return
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Your cart is empty</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Today's Sales */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-foreground">
+            Today's Sales Summary
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="stats-card-primary p-4">
+              <p className="text-sm font-medium text-primary/70">Total Sales</p>
+              <h3 className="text-xl font-bold text-primary">
+                 PKR 
+                {todaysSales.reduce((sum, sale) => sum + (sale.amount ?? 0), 0)}
+              </h3>
+            </div>
+            <div className="stats-card-success p-4">
+              <p className="text-sm font-medium text-success/70">
+                Total Profit
+              </p>
+              <h3 className="text-xl font-bold text-success">
+                 PKR 
+                {todaysSales.reduce((sum, sale) => sum + (sale.profit ?? 0), 0)}
+              </h3>
+            </div>
+          </div>
+
+          <div className="medical-card">
+            <div className="p-4 border-b border-border">
+              <h3 className="font-semibold text-foreground">Recent Sales</h3>
+            </div>
+            <div className="p-4 space-y-3">
+              {todaysSales.map((sale) => (
+                <div key={sale.id} className="p-3 bg-accent/20 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {sale.medicineName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {sale.timestamp
+                          ? sale.timestamp.toDate().toLocaleTimeString()
+                          : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-foreground">
+                         PKR {sale.amount}
+                      </p>
+                      <p className="text-sm text-success">
+                        Profit:  PKR {sale.profit}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Qty: {sale.quantity}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
