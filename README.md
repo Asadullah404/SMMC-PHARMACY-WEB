@@ -15,10 +15,10 @@ You can edit and update this application in multiple ways:
 Clone and run locally with Node.js & npm:
 
 # Step 1: Clone the repository
-git clone <YOUR_GIT_URL>
+git clone my git Url
 
 # Step 2: Navigate into the project
-cd <YOUR_PROJECT_NAME>
+cd you project name
 
 # Step 3: Install dependencies
 npm install
