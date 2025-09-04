@@ -117,7 +117,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-primary/70">Today's Sales</p>
-              <h3 className="text-2xl font-bold text-primary">₹{todaysSales}</h3>
+              <h3 className="text-2xl font-bold text-primary"> PKR {todaysSales}</h3>
             </div>
             <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-primary" />
@@ -130,7 +130,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-success/70">Today's Profit</p>
-              <h3 className="text-2xl font-bold text-success">₹{todaysProfit}</h3>
+              <h3 className="text-2xl font-bold text-success"> PKR {todaysProfit}</h3>
             </div>
             <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-success" />

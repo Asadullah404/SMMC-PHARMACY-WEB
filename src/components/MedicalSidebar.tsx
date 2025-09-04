@@ -62,7 +62,6 @@ export function MedicalSidebar() {
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              {/* ✅ Logo instead of icon */}
               <img
                 src="/logo.png"
                 alt="MedStore Logo"
@@ -97,7 +96,7 @@ export function MedicalSidebar() {
               <NavLink
                 key={item.title}
                 to={item.url}
-                onClick={() => setIsMobileOpen(false)} // auto-close on mobile
+                onClick={() => setIsMobileOpen(false)}
                 className={cn(
                   "nav-item",
                   active && "active",
@@ -113,7 +112,8 @@ export function MedicalSidebar() {
 
         {/* Footer */}
         {!isCollapsed && (
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border space-y-3">
+            {/* System Status */}
             <div className="medical-card p-3 bg-primary/5 border-primary/20">
               <p className="text-xs text-sidebar-foreground/70 mb-1">
                 System Status

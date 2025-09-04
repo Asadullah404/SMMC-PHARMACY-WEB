@@ -13,6 +13,8 @@ import {
   Timestamp,
   doc,
   updateDoc,
+  deleteDoc,
+  getDoc,
   DocumentData,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
@@ -67,12 +69,27 @@ export default function Sales() {
       const salesData: Sale[] = snapshot.docs.map(
         (doc: QueryDocumentSnapshot<DocumentData>) => {
           const data = doc.data();
+          
+          // Normalize timestamp
+          let timestamp: Timestamp;
+          if (data.timestamp) {
+            if (typeof data.timestamp.toDate === "function") {
+              // Already a Firestore Timestamp
+              timestamp = data.timestamp;
+            } else {
+              // Possibly a string or object, convert to Firestore Timestamp
+              timestamp = Timestamp.fromDate(new Date(data.timestamp));
+            }
+          } else {
+            timestamp = Timestamp.now();
+          }
+      
           return {
             id: doc.id,
             amount: Number(data.amount ?? 0),
             profit: Number(data.profit ?? 0),
             date: data.date ?? "",
-            timestamp: data.timestamp as Timestamp,
+            timestamp,
             medicineId: data.medicine_id,
             medicineName: data.medicine_name,
             quantity: Number(data.quantity ?? 0),
@@ -81,6 +98,7 @@ export default function Sales() {
           };
         }
       );
+      
 
       setTodaysSales(salesData);
     };
@@ -148,7 +166,7 @@ export default function Sales() {
       0
     );
 
-  // Process sale
+  // ------------------ PROCESS SALE ------------------
   const processSale = async () => {
     if (cart.length === 0) return;
 
@@ -170,14 +188,48 @@ export default function Sales() {
 
       await addDoc(collection(db, "sales"), saleDoc);
 
-      // Update medicine stock
+      // ✅ Get current stock before updating
       const medicineRef = doc(db, "medicines", item.medicineId);
-      await updateDoc(medicineRef, {
-        quantity: item.medicine.quantity - item.quantity,
-      });
+      const medicineSnap = await getDoc(medicineRef);
+
+      if (medicineSnap.exists()) {
+        const currentQty = medicineSnap.data().quantity ?? 0;
+        await updateDoc(medicineRef, {
+          quantity: Math.max(0, currentQty - item.quantity), // prevent negative stock
+        });
+      }
     }
 
     setCart([]);
+  };
+
+  // ------------------ REVERSE SALE ------------------
+  const reverseSale = async (sale: Sale) => {
+    try {
+      const medicineRef = doc(db, "medicines", sale.medicineId);
+      const medicineSnap = await getDoc(medicineRef);
+
+      if (!medicineSnap.exists()) {
+        console.error("Medicine not found:", sale.medicineId);
+        return;
+      }
+
+      const currentQty = medicineSnap.data().quantity ?? 0;
+
+      // ✅ Add back sold quantity to stock
+      await updateDoc(medicineRef, {
+        quantity: currentQty + sale.quantity,
+      });
+
+      // Delete sale record
+      const saleRef = doc(db, "sales", sale.id);
+      await deleteDoc(saleRef);
+
+      // Update UI state
+      setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
+    } catch (err) {
+      console.error("Error reversing sale:", err);
+    }
   };
 
   // ------------------ JSX ------------------
@@ -218,7 +270,7 @@ export default function Sales() {
                           {item.medicineName}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                           PKR {item.price} each
+                          PKR {item.price} each
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -246,7 +298,7 @@ export default function Sales() {
                       </div>
                       <div className="text-right ml-4">
                         <p className="font-medium text-foreground">
-                           PKR {(item.price * item.quantity).toFixed(2)}
+                          PKR {(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -256,13 +308,13 @@ export default function Sales() {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-muted-foreground">Subtotal:</span>
                       <span className="font-medium text-foreground">
-                         PKR {getTotalAmount().toFixed(2)}
+                        PKR {getTotalAmount().toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-muted-foreground">Profit:</span>
                       <span className="font-medium text-success">
-                         PKR {getTotalProfit().toFixed(2)}
+                        PKR {getTotalProfit().toFixed(2)}
                       </span>
                     </div>
                     <div className="flex space-x-3">
@@ -294,7 +346,7 @@ export default function Sales() {
             <div className="stats-card-primary p-4">
               <p className="text-sm font-medium text-primary/70">Total Sales</p>
               <h3 className="text-xl font-bold text-primary">
-                 PKR 
+                PKR{" "}
                 {todaysSales.reduce((sum, sale) => sum + (sale.amount ?? 0), 0)}
               </h3>
             </div>
@@ -303,7 +355,7 @@ export default function Sales() {
                 Total Profit
               </p>
               <h3 className="text-xl font-bold text-success">
-                 PKR 
+                PKR{" "}
                 {todaysSales.reduce((sum, sale) => sum + (sale.profit ?? 0), 0)}
               </h3>
             </div>
@@ -329,15 +381,25 @@ export default function Sales() {
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-foreground">
-                         PKR {sale.amount}
+                        PKR {sale.amount}
                       </p>
                       <p className="text-sm text-success">
-                        Profit:  PKR {sale.profit}
+                        Profit: PKR {sale.profit}
                       </p>
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Qty: {sale.quantity}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                      Qty: {sale.quantity}
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => reverseSale(sale)}
+                      className="gap-1"
+                    >
+                      <RotateCcw className="w-4 h-4" /> Reverse
+                    </Button>
                   </div>
                 </div>
               ))}
