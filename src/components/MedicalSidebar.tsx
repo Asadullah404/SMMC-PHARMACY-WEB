@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Menu,
   X,
-  Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,7 +55,6 @@ export function MedicalSidebar() {
         className={cn(
           "bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-smooth fixed md:static inset-y-0 left-0 z-50 flex flex-col",
           isCollapsed ? "w-16" : "w-64",
-          // mobile open/close
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
@@ -64,9 +62,12 @@ export function MedicalSidebar() {
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-primary-foreground" />
-              </div>
+              {/* ✅ Logo instead of icon */}
+              <img
+                src="/logo.png"
+                alt="MedStore Logo"
+                className="w-10 h-10 rounded-xl object-contain"
+              />
               <div>
                 <h1 className="font-bold text-sidebar-foreground">MedStore</h1>
                 <p className="text-xs text-sidebar-foreground/60">
