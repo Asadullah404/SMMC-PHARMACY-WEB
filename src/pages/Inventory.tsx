@@ -8,8 +8,7 @@ import {
   Edit,
   Trash2,
   MoreVertical,
-  Download,
-  Upload,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +34,6 @@ import {
   addDoc,
   updateDoc,
   Timestamp,
-  setDoc,
 } from "firebase/firestore";
 import * as XLSX from "xlsx";
 
@@ -164,73 +162,23 @@ export default function Inventory() {
     reader.readAsBinaryString(file);
   };
 
-  // backup db
-  const handleBackup = async () => {
-    try {
-      const collections = ["medicines", "sales"]; // add your collection names
-      let backupData: any = {};
-
-      for (const col of collections) {
-        const snap = await getDocs(collection(db, col));
-        backupData[col] = snap.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-      }
-
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `firestore-backup-${new Date().toISOString()}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error backing up DB:", error);
-    }
-  };
-
-  // restore db
-  const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      try {
-        const content = evt.target?.result as string;
-        const jsonData = JSON.parse(content);
-
-        for (const [colName, docs] of Object.entries<any[]>(jsonData)) {
-          for (const docData of docs) {
-            const { id, ...data } = docData;
-            await setDoc(doc(db, colName, id), data); // restore with original IDs
-          }
-        }
-
-        alert("Database restored successfully!");
-        fetchMedicines();
-      } catch (error) {
-        console.error("Error restoring DB:", error);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // filter
+  // filter + sort
   const filteredMedicines = medicines.filter((medicine) =>
     medicine.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalMedicines = medicines.length;
-  const totalValue = medicines.reduce(
+  const totalCostValue = medicines.reduce(
+    (sum, med) => sum + med.cost_price * med.quantity,
+    0
+  );
+  
+  const totalRetailValue = medicines.reduce(
     (sum, med) => sum + med.retail_price * med.quantity,
     0
   );
 
-  // stock badge
+  // stock badge helper
   const getStockBadge = (qty: number) => {
     if (qty <= 5)
       return (
@@ -256,7 +204,7 @@ export default function Inventory() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Inventory Management
           </h1>
           <p className="text-muted-foreground">
@@ -276,25 +224,6 @@ export default function Inventory() {
               />
             </label>
           </Button>
-
-          <Button variant="outline" className="gap-2" onClick={handleBackup}>
-            <Download className="w-4 h-4" />
-            Backup DB
-          </Button>
-
-          <Button variant="outline" className="gap-2" asChild>
-            <label>
-              <Upload className="w-4 h-4" />
-              Restore DB
-              <input
-                type="file"
-                accept=".json"
-                hidden
-                onChange={handleRestore}
-              />
-            </label>
-          </Button>
-
           <Button className="gap-2" onClick={() => setOpenDialog(true)}>
             <Plus className="w-4 h-4" />
             Add Medicine
@@ -362,19 +291,27 @@ export default function Inventory() {
         </table>
       </div>
 
-      {/* Totals */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-4 rounded-xl border bg-gradient-to-r from-green-100 to-green-200">
-          <p className="text-sm text-green-800">Total Medicines</p>
-          <p className="text-3xl font-bold text-green-900">{totalMedicines}</p>
-        </div>
-        <div className="p-4 rounded-xl border bg-gradient-to-r from-blue-100 to-blue-200">
-          <p className="text-sm text-blue-800">Total Stock Value</p>
-          <p className="text-3xl font-bold text-blue-900">
-            PKR {totalValue.toFixed(2)}
-          </p>
-        </div>
-      </div>
+{/* Totals */}
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div className="p-4 rounded-xl border bg-gradient-to-r from-green-100 to-green-200">
+    <p className="text-sm text-green-800">Total Medicines</p>
+    <p className="text-3xl font-bold text-green-900">
+      {totalMedicines}
+    </p>
+  </div>
+  <div className="p-4 rounded-xl border bg-gradient-to-r from-blue-100 to-blue-200">
+    <p className="text-sm text-blue-800">Total Cost Value</p>
+    <p className="text-2xl font-bold text-blue-900">
+      PKR {totalCostValue.toFixed(2)}
+    </p>
+  </div>
+  <div className="p-4 rounded-xl border bg-gradient-to-r from-purple-100 to-purple-200">
+    <p className="text-sm text-purple-800">Total Retail Value</p>
+    <p className="text-2xl font-bold text-purple-900">
+      PKR {totalRetailValue.toFixed(2)}
+    </p>
+  </div>
+</div>
 
       {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -406,9 +343,7 @@ export default function Inventory() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Cost Price
-              </label>
+              <label className="block text-sm font-medium mb-1">Cost Price</label>
               <Input
                 name="cost_price"
                 placeholder="Cost Price"
