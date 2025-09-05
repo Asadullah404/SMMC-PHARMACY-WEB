@@ -226,7 +226,7 @@ export default function Inventory() {
 
   const totalMedicines = medicines.length;
   const totalValue = medicines.reduce(
-    (sum, med) => sum + med.cost_price * med.quantity,
+    (sum, med) => sum + med.retail_price * med.quantity,
     0
   );
 
