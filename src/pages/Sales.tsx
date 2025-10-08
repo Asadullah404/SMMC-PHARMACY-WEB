@@ -926,6 +926,7 @@ interface PrescriptionDoc {
 export default function Sales() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
+  const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>(
     []
   );
@@ -1120,6 +1121,21 @@ export default function Sales() {
       }
 
       setCart([]);
+
+      // ✅ Delete loaded prescription if any
+if (activePrescriptionId) {
+  try {
+    await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
+    setPrescriptions((prev) =>
+      prev.filter((p) => p.id !== activePrescriptionId)
+    );
+    setActivePrescriptionId(null);
+  } catch (err) {
+    console.error("Failed to delete prescription:", err);
+  }
+}
+
+
       toast({
         title: "Sale processed",
         description: "Sale saved and stock updated.",
@@ -1378,28 +1394,29 @@ export default function Sales() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          // add all meds to cart
-                          if (!pres.prescription || pres.prescription.length === 0) {
-                            toast({
-                              title: "Empty prescription",
-                              description: "This prescription has no medicines.",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          addMultipleToCart(pres.prescription);
-                          toast({
-                            title: "Prescription loaded",
-                            description: "All medicines added to cart.",
-                            variant: "default",
-                          });
-                        }}
-                      >
-                        Add to Cart
-                      </Button>
+                    <Button
+  size="sm"
+  onClick={() => {
+    if (!pres.prescription || pres.prescription.length === 0) {
+      toast({
+        title: "Empty prescription",
+        description: "This prescription has no medicines.",
+        variant: "destructive",
+      });
+      return;
+    }
+    addMultipleToCart(pres.prescription);
+    setActivePrescriptionId(pres.id); // ✅ remember which prescription was loaded
+    toast({
+      title: "Prescription loaded",
+      description: "All medicines added to cart.",
+      variant: "default",
+    });
+  }}
+>
+  Add to Cart
+</Button>
+
                     </div>
                   </div>
                 ))
