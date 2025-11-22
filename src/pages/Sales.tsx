@@ -1033,42 +1033,50 @@
 // // //                 <>
 // // //                   {cart.map((item) => (
 // // //                     <div
-// // //                       key={item.medicineId}
-// // //                       className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
-// // //                     >
-// // //                       <div className="flex-1">
-// // //                         <h4 className="font-medium">{item.medicineName}</h4>
-// // //                         <p className="text-sm text-muted-foreground">
-// // //                           PKR {item.price} each
-// // //                         </p>
-// // //                       </div>
-// // //                       <div className="flex items-center space-x-2">
-// // //                         <Button
-// // //                           variant="outline"
-// // //                           size="sm"
-// // //                           onClick={() =>
-// // //                             updateQuantity(item.medicineId, item.quantity - 1)
-// // //                           }
-// // //                         >
-// // //                           <Minus className="w-3 h-3" />
-// // //                         </Button>
-// // //                         <span className="w-8 text-center">{item.quantity}</span>
-// // //                         <Button
-// // //                           variant="outline"
-// // //                           size="sm"
-// // //                           onClick={() =>
-// // //                             updateQuantity(item.medicineId, item.quantity + 1)
-// // //                           }
-// // //                         >
-// // //                           <Plus className="w-3 h-3" />
-// // //                         </Button>
-// // //                       </div>
-// // //                       <div className="text-right ml-4">
-// // //                         <p className="font-medium">
-// // //                           PKR {(item.price * item.quantity).toFixed(2)}
-// // //                         </p>
-// // //                       </div>
-// // //                     </div>
+//                       key={item.medicineId}
+//                       className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-accent/30 rounded-lg gap-3"
+//                     >
+//                       <div className="flex-1">
+//                         <h4 className="font-medium text-foreground text-sm sm:text-base">
+//                           {item.medicineName}
+//                         </h4>
+//                         <p className="text-xs sm:text-sm text-muted-foreground">
+//                           PKR {item.price} each
+//                         </p>
+//                       </div>
+//                       <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+//                         <div className="flex items-center space-x-2">
+//                           <Button
+//                             variant="outline"
+//                             size="sm"
+//                             className="h-8 w-8 p-0"
+//                             onClick={() =>
+//                               updateQuantity(item.medicineId, item.quantity - 1)
+//                             }
+//                           >
+//                             <Minus className="w-3 h-3" />
+//                           </Button>
+//                           <span className="w-8 text-center font-medium text-sm">
+//                             {item.quantity}
+//                           </span>
+//                           <Button
+//                             variant="outline"
+//                             size="sm"
+//                             className="h-8 w-8 p-0"
+//                             onClick={() =>
+//                               updateQuantity(item.medicineId, item.quantity + 1)
+//                             }
+//                           >
+//                             <Plus className="w-3 h-3" />
+//                           </Button>
+//                         </div>
+//                         <div className="text-right min-w-[80px]">
+//                           <p className="font-medium text-foreground text-sm sm:text-base">
+//                             PKR {(item.price * item.quantity).toFixed(2)}
+//                           </p>
+//                         </div>
+//                       </div>
+//                     </div>
 // // //                   ))}
 
 // // //                   <div className="border-t pt-3 mt-4">
@@ -1573,25 +1581,25 @@
 // // //   // Process sale & print PDF
 // // //   const handleProcessSaleWithPDF = async () => {
 // // //     if (cart.length === 0) return;
-    
+
 // // //     try {
 // // //       // IMPORTANT: Generate PDF FIRST (before cart is cleared)
 // // //       console.log("Generating PDF with cart items:", cart.length);
 // // //       console.log("Patient data:", activePatient);
-      
+
 // // //       await generateSalePDF({
 // // //         cart: cart,
 // // //         patient: activePatient || undefined,
 // // //       });
-      
+
 // // //       console.log("PDF generation completed");
-      
+
 // // //       // Small delay to ensure PDF download starts
 // // //       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
 // // //       // Then process the sale (this clears the cart)
 // // //       await processSale();
-      
+
 // // //       toast({
 // // //         title: "PDF Generated",
 // // //         description: "Receipt PDF has been downloaded successfully.",
@@ -3476,25 +3484,25 @@
 // // //   // Process sale & print PDF
 // // //   const handleProcessSaleWithPDF = async () => {
 // // //     if (cart.length === 0) return;
-    
+
 // // //     try {
 // // //       // IMPORTANT: Generate PDF FIRST (before cart is cleared)
 // // //       console.log("Generating PDF with cart items:", cart.length);
 // // //       console.log("Patient data:", activePatient);
-      
+
 // // //       await generateSalePDF({
 // // //         cart: cart,
 // // //         patient: activePatient || undefined,
 // // //       });
-      
+
 // // //       console.log("PDF generation completed");
-      
+
 // // //       // Small delay to ensure PDF download starts
 // // //       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
 // // //       // Then process the sale (this clears the cart)
 // // //       await processSale();
-      
+
 // // //       toast({
 // // //         title: "PDF Generated",
 // // //         description: "Receipt PDF has been downloaded successfully.",
@@ -4205,22 +4213,22 @@
 //   // Process sale & print PDF
 //   const handleProcessSaleWithPDF = async () => {
 //     if (cart.length === 0) return;
-    
+
 //     try {
 //       console.log("Generating PDF with cart items:", cart.length);
 //       console.log("Patient data:", activePatient);
-      
+
 //       await generateSalePDF({
 //         cart: cart,
 //         patient: activePatient || undefined,
 //       });
-      
+
 //       console.log("PDF generation completed");
-      
+
 //       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
 //       await processSale();
-      
+
 //       toast({
 //         title: "PDF Generated",
 //         description: "Receipt PDF has been downloaded successfully.",
@@ -4422,22 +4430,6 @@
 //                       </div>
 //                     </div>
 //                   ))
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         </>
-//       )}
-
-//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//         {/* Left Side */}
-//         <div className="space-y-6">
-//           <h1 className="text-3xl font-bold text-foreground">Sales Management</h1>
-
-//           {/* Active Patient Info */}
-//           {activePatient && (
-//             <div className="medical-card p-4 bg-blue-50 dark:bg-blue-950">
-//               <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">Active Prescription</h3>
 //               <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
 //               <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
 //               {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
@@ -4637,7 +4629,7 @@
 //               )}
 //             </div>
 //           </div>    
-                
+
 //          {/* Recent Sales */}
 //          <div className="medical-card">
 //             <div className="p-4 border-b">
@@ -4681,38 +4673,38 @@
 
 import { useState, useEffect } from "react";
 import {
-  ShoppingCart,
-  Plus,
-  Minus,
-  Receipt,
-  RotateCcw,
-  FileDown,
-  History,
-  X,
-  Search,
-  Eye,
-  EyeOff,
-  Stethoscope,
+    ShoppingCart,
+    Plus,
+    Minus,
+    Receipt,
+    RotateCcw,
+    FileDown,
+    History,
+    X,
+    Search,
+    Eye,
+    EyeOff,
+    Stethoscope,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/SearchBar";
 import { Input } from "@/components/ui/input";
 import { db } from "@/firebase";
 import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  Timestamp,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  DocumentData,
-  QueryDocumentSnapshot,
-  orderBy,
-  limit,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
+    Timestamp,
+    doc,
+    updateDoc,
+    deleteDoc,
+    getDoc,
+    DocumentData,
+    QueryDocumentSnapshot,
+    orderBy,
+    limit,
 } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import generateSalePDF from "@/components/SalePDF";
@@ -4720,1065 +4712,1061 @@ import generateSalePDF from "@/components/SalePDF";
 // ------------------ TYPES ------------------
 
 export interface Medicine {
-  id: string;
-  name: string;
-  costPrice: number;
-  retailPrice: number;
-  quantity: number;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+    id: string;
+    name: string;
+    costPrice: number;
+    retailPrice: number;
+    quantity: number;
+    createdAt?: Timestamp;
+    updatedAt?: Timestamp;
 }
 
 export interface CartItem {
-  medicineId: string;
-  medicineName: string;
-  quantity: number;
-  price: number;
-  cost: number;
-  medicine: Medicine;
-  dosage?: string;
-  instructions?: string;
+    medicineId: string;
+    medicineName: string;
+    quantity: number;
+    price: number;
+    cost: number;
+    medicine: Medicine;
+    dosage?: string;
+    instructions?: string;
 }
 
 interface Sale {
-  id: string;
-  amount: number;
-  profit: number;
-  date: string;
-  timestamp: Timestamp;
-  medicineId: string;
-  medicineName: string;
-  quantity: number;
-  costPrice: number;
-  retailPrice: number;
-  doctorFee?: number;
+    id: string;
+    amount: number;
+    profit: number;
+    date: string;
+    timestamp: Timestamp;
+    medicineId: string;
+    medicineName: string;
+    quantity: number;
+    costPrice: number;
+    retailPrice: number;
+    doctorFee?: number;
 }
 
 interface PatientData {
-  name?: string;
-  referringDoctor?: string;
-  age?: string;
-  gender?: string;
-  phone?: string;
-  [k: string]: any;
+    name?: string;
+    referringDoctor?: string;
+    age?: string;
+    gender?: string;
+    phone?: string;
+    [k: string]: any;
 }
 
 interface PrescriptionDoc {
-  id: string;
-  patient?: PatientData;
-  prescription?: Array<{
-    id?: string;
-    name?: string;
-    qty?: number;
-    retail_price?: number;
-    cost_price?: number;
-    dosage?: string;
-    instructions?: string;
-    [k: string]: any;
-  }>;
-  totalItems?: number;
-  totalRetail?: number;
-  timestamp?: string | any;
-  processed?: boolean;
-  processedAt?: Timestamp;
+    id: string;
+    patient?: PatientData;
+    prescription?: Array<{
+        id?: string;
+        name?: string;
+        qty?: number;
+        retail_price?: number;
+        cost_price?: number;
+        dosage?: string;
+        instructions?: string;
+        [k: string]: any;
+    }>;
+    totalItems?: number;
+    totalRetail?: number;
+    timestamp?: string | any;
+    processed?: boolean;
+    processedAt?: Timestamp;
 }
 
 // ------------------ COMPONENT ------------------
 
 export default function Sales() {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-  const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-  const [activePatient, setActivePatient] = useState<PatientData | null>(null);
-  const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyPrescriptions, setHistoryPrescriptions] = useState<PrescriptionDoc[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isRevealed, setIsRevealed] = useState(true);
-  const [doctorFee, setDoctorFee] = useState<number>(0);
-  const [todaysDoctorFees, setTodaysDoctorFees] = useState<number>(0);
-  const { toast } = useToast();
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
+    const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
+    const [activePatient, setActivePatient] = useState<PatientData | null>(null);
+    const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [historyPrescriptions, setHistoryPrescriptions] = useState<PrescriptionDoc[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isRevealed, setIsRevealed] = useState(true);
+    const [doctorFee, setDoctorFee] = useState<number>(0);
+    const [todaysDoctorFees, setTodaysDoctorFees] = useState<number>(0);
+    const { toast } = useToast();
 
-  // Fetch today's sales
-  useEffect(() => {
-    const fetchSales = async () => {
-      try {
-        const today = new Date().toISOString().split("T")[0];
-        const q = query(collection(db, "sales"), where("date", "==", today));
-        const snapshot = await getDocs(q);
+    // Fetch today's sales
+    useEffect(() => {
+        const fetchSales = async () => {
+            try {
+                const today = new Date().toISOString().split("T")[0];
+                const q = query(collection(db, "sales"), where("date", "==", today));
+                const snapshot = await getDocs(q);
 
-        const salesData: Sale[] = snapshot.docs.map(
-          (doc: QueryDocumentSnapshot<DocumentData>) => {
-            const data = doc.data();
-            let timestamp: Timestamp;
-            if (data.timestamp && typeof data.timestamp.toDate === "function") {
-              timestamp = data.timestamp;
-            } else if (data.timestamp) {
-              timestamp = Timestamp.fromDate(new Date(data.timestamp));
-            } else {
-              timestamp = Timestamp.now();
+                const salesData: Sale[] = snapshot.docs.map(
+                    (doc: QueryDocumentSnapshot<DocumentData>) => {
+                        const data = doc.data();
+                        let timestamp: Timestamp;
+                        if (data.timestamp && typeof data.timestamp.toDate === "function") {
+                            timestamp = data.timestamp;
+                        } else if (data.timestamp) {
+                            timestamp = Timestamp.fromDate(new Date(data.timestamp));
+                        } else {
+                            timestamp = Timestamp.now();
+                        }
+                        return {
+                            id: doc.id,
+                            amount: Number(data.amount ?? 0),
+                            profit: Number(data.profit ?? 0),
+                            date: data.date ?? "",
+                            timestamp,
+                            medicineId: data.medicine_id,
+                            medicineName: data.medicine_name,
+                            quantity: Number(data.quantity ?? 0),
+                            costPrice: Number(data.cost_price ?? 0),
+                            retailPrice: Number(data.retail_price ?? 0),
+                            doctorFee: Number(data.doctor_fee ?? 0),
+                        };
+                    }
+                );
+                setTodaysSales(salesData);
+
+                // Calculate total doctor fees
+                const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
+                setTodaysDoctorFees(totalDoctorFees);
+            } catch (err) {
+                console.error("Error fetching today's sales:", err);
             }
-            return {
-              id: doc.id,
-              amount: Number(data.amount ?? 0),
-              profit: Number(data.profit ?? 0),
-              date: data.date ?? "",
-              timestamp,
-              medicineId: data.medicine_id,
-              medicineName: data.medicine_name,
-              quantity: Number(data.quantity ?? 0),
-              costPrice: Number(data.cost_price ?? 0),
-              retailPrice: Number(data.retail_price ?? 0),
-              doctorFee: Number(data.doctor_fee ?? 0),
-            };
-          }
-        );
-        setTodaysSales(salesData);
-        
-        // Calculate total doctor fees
-        const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-        setTodaysDoctorFees(totalDoctorFees);
-      } catch (err) {
-        console.error("Error fetching today's sales:", err);
-      }
-    };
-    fetchSales();
-  }, []);
-
-  // Fetch active prescriptions (not processed)
-  useEffect(() => {
-    const fetchPrescriptions = async () => {
-      try {
-        const q = query(
-          collection(db, "prescriptions"),
-          orderBy("timestamp", "desc"),
-          limit(50)
-        );
-        const snap = await getDocs(q);
-        const docs: PrescriptionDoc[] = snap.docs
-          .map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              patient: data.patient,
-              prescription: data.prescription || data.prescribed || [],
-              totalItems: data.totalItems,
-              totalRetail: data.totalRetail,
-              timestamp: data.timestamp,
-              processed: data.processed || false,
-              processedAt: data.processedAt,
-            };
-          })
-          .filter((doc) => !doc.processed);
-        setPrescriptions(docs);
-      } catch (err) {
-        console.error("Error fetching prescriptions:", err);
-      }
-    };
-    fetchPrescriptions();
-  }, []);
-
-  // Fetch all prescriptions for history
-  useEffect(() => {
-    const fetchAllPrescriptions = async () => {
-      try {
-        const q = query(
-          collection(db, "prescriptions"),
-          orderBy("timestamp", "desc"),
-          limit(200)
-        );
-        const snap = await getDocs(q);
-        const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-          const data = d.data();
-          return {
-            id: d.id,
-            patient: data.patient,
-            prescription: data.prescription || data.prescribed || [],
-            totalItems: data.totalItems,
-            totalRetail: data.totalRetail,
-            timestamp: data.timestamp,
-            processed: data.processed || false,
-            processedAt: data.processedAt,
-          };
-        });
-        setHistoryPrescriptions(docs);
-      } catch (err) {
-        console.error("Error fetching history prescriptions:", err);
-      }
-    };
-    if (historyOpen) {
-      fetchAllPrescriptions();
-    }
-  }, [historyOpen]);
-
-  // Filter history prescriptions by search query
-  const filteredHistory = historyPrescriptions.filter((pres) => {
-    const patientName = pres.patient?.name?.toLowerCase() || "";
-    const doctorName = pres.patient?.referringDoctor?.toLowerCase() || "";
-    const search = searchQuery.toLowerCase();
-    return patientName.includes(search) || doctorName.includes(search);
-  });
-
-  // Add single medicine
-  const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
-    const normalizedMedicine: Medicine = {
-      id: medicine.id,
-      name: medicine.name,
-      costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-      retailPrice: Number(
-        medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-      ),
-      quantity: Number(medicine.quantity ?? 0),
-      createdAt: medicine.created_at,
-      updatedAt: medicine.updated_at,
-    };
-
-    const existingItem = cart.find(
-      (item) => item.medicineId === normalizedMedicine.id
-    );
-    if (existingItem) {
-      setCart(
-        cart.map((item) =>
-          item.medicineId === normalizedMedicine.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        )
-      );
-    } else {
-      const newItem: CartItem = {
-        medicineId: normalizedMedicine.id,
-        medicineName: normalizedMedicine.name,
-        quantity,
-        price: normalizedMedicine.retailPrice,
-        cost: normalizedMedicine.costPrice,
-        medicine: normalizedMedicine,
-        dosage: dosage || undefined,
-        instructions: instructions || undefined,
-      };
-      setCart((prev) => [...prev, newItem]);
-    }
-  };
-
-  // Add all medicines from a prescription
-  const addMultipleToCart = (items: {
-    id?: string;
-    name?: string;
-    qty?: number;
-    retail_price?: number;
-    cost_price?: number;
-    dosage?: string;
-    instructions?: string;
-  }[]) => {
-    for (const it of items) {
-      const medObj = {
-        id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-        name: it.name || "Unnamed",
-        cost_price: it.cost_price ?? 0,
-        retail_price: it.retail_price ?? 0,
-        quantity: it.qty ?? 1,
-      };
-      addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
-    }
-  };
-
-  // Update quantity
-  const updateQuantity = (medicineId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setCart(cart.filter((item) => item.medicineId !== medicineId));
-    } else {
-      setCart(
-        cart.map((item) =>
-          item.medicineId === medicineId
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
-    }
-  };
-
-  // Totals
-  const getTotalAmount = () =>
-    cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const getTotalProfit = () =>
-    cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-  const getGrandTotal = () => getTotalAmount() + doctorFee;
-
-  // ------------------ PROCESS SALE ------------------
-  const processSale = async () => {
-    // Allow processing even if cart is empty but doctor fee exists
-    if (cart.length === 0 && doctorFee === 0) {
-      toast({
-        title: "Empty Sale",
-        description: "Add medicines or enter doctor fee to process sale.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Process medicines if any
-      for (const item of cart) {
-        const amount = item.price * item.quantity;
-        const profit = (item.price - item.cost) * item.quantity;
-
-        const saleDoc = {
-          amount,
-          profit,
-          date: new Date().toISOString().split("T")[0],
-          timestamp: Timestamp.now(),
-          medicine_id: item.medicineId,
-          medicine_name: item.medicineName,
-          quantity: item.quantity,
-          cost_price: item.cost,
-          retail_price: item.price,
-          doctor_fee: 0,
         };
+        fetchSales();
+    }, []);
 
-        await addDoc(collection(db, "sales"), saleDoc);
-
-        const medicineRef = doc(db, "medicines", item.medicineId);
-        const medicineSnap = await getDoc(medicineRef);
-        if (medicineSnap.exists()) {
-          const currentQty = medicineSnap.data().quantity ?? 0;
-          await updateDoc(medicineRef, {
-            quantity: Math.max(0, currentQty - item.quantity),
-          });
-        }
-      }
-
-      // Process doctor fee separately if it exists
-      if (doctorFee > 0) {
-        const doctorFeeSaleDoc = {
-          amount: doctorFee,
-          profit: doctorFee,
-          date: new Date().toISOString().split("T")[0],
-          timestamp: Timestamp.now(),
-          medicine_id: "DOCTOR_FEE",
-          medicine_name: "Doctor Consultation Fee",
-          quantity: 1,
-          cost_price: 0,
-          retail_price: doctorFee,
-          doctor_fee: doctorFee,
+    // Fetch active prescriptions (not processed)
+    useEffect(() => {
+        const fetchPrescriptions = async () => {
+            try {
+                const q = query(
+                    collection(db, "prescriptions"),
+                    orderBy("timestamp", "desc"),
+                    limit(50)
+                );
+                const snap = await getDocs(q);
+                const docs: PrescriptionDoc[] = snap.docs
+                    .map((d) => {
+                        const data = d.data();
+                        return {
+                            id: d.id,
+                            patient: data.patient,
+                            prescription: data.prescription || data.prescribed || [],
+                            totalItems: data.totalItems,
+                            totalRetail: data.totalRetail,
+                            timestamp: data.timestamp,
+                            processed: data.processed || false,
+                            processedAt: data.processedAt,
+                        };
+                    })
+                    .filter((doc) => !doc.processed);
+                setPrescriptions(docs);
+            } catch (err) {
+                console.error("Error fetching prescriptions:", err);
+            }
         };
+        fetchPrescriptions();
+    }, []);
 
-        await addDoc(collection(db, "sales"), doctorFeeSaleDoc);
-      }
-
-      setCart([]);
-      setDoctorFee(0);
-      setActivePatient(null);
-
-      // Mark prescription as processed
-      if (activePrescriptionId) {
-        try {
-          await updateDoc(doc(db, "prescriptions", activePrescriptionId), {
-            processed: true,
-            processedAt: Timestamp.now(),
-          });
-          setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-          setActivePrescriptionId(null);
-        } catch (err) {
-          console.error("Failed to mark prescription as processed:", err);
-        }
-      }
-
-      toast({
-        title: "Sale processed",
-        description: "Sale saved and stock updated.",
-        variant: "default",
-      });
-
-      // Refresh today's sales
-      const today = new Date().toISOString().split("T")[0];
-      const q = query(collection(db, "sales"), where("date", "==", today));
-      const snapshot = await getDocs(q);
-      const salesData: Sale[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          amount: Number(data.amount ?? 0),
-          profit: Number(data.profit ?? 0),
-          date: data.date ?? "",
-          timestamp: data.timestamp,
-          medicineId: data.medicine_id,
-          medicineName: data.medicine_name,
-          quantity: Number(data.quantity ?? 0),
-          costPrice: Number(data.cost_price ?? 0),
-          retailPrice: Number(data.retail_price ?? 0),
-          doctorFee: Number(data.doctor_fee ?? 0),
+    // Fetch all prescriptions for history
+    useEffect(() => {
+        const fetchAllPrescriptions = async () => {
+            try {
+                const q = query(
+                    collection(db, "prescriptions"),
+                    orderBy("timestamp", "desc"),
+                    limit(200)
+                );
+                const snap = await getDocs(q);
+                const docs: PrescriptionDoc[] = snap.docs.map((d) => {
+                    const data = d.data();
+                    return {
+                        id: d.id,
+                        patient: data.patient,
+                        prescription: data.prescription || data.prescribed || [],
+                        totalItems: data.totalItems,
+                        totalRetail: data.totalRetail,
+                        timestamp: data.timestamp,
+                        processed: data.processed || false,
+                        processedAt: data.processedAt,
+                    };
+                });
+                setHistoryPrescriptions(docs);
+            } catch (err) {
+                console.error("Error fetching history prescriptions:", err);
+            }
         };
-      });
-      setTodaysSales(salesData);
-      
-      // Recalculate total doctor fees
-      const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-      setTodaysDoctorFees(totalDoctorFees);
-    } catch (err) {
-      console.error("Error processing sale:", err);
-      toast({
-        title: "Error",
-        description: "Failed to process sale. Check console.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Process sale & print PDF
-  const handleProcessSaleWithPDF = async () => {
-    if (cart.length === 0 && doctorFee === 0) {
-      toast({
-        title: "Empty Sale",
-        description: "Add medicines or enter doctor fee to process sale.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      console.log("Generating PDF with cart items:", cart.length);
-      console.log("Patient data:", activePatient);
-      console.log("Doctor fee:", doctorFee);
-      
-      await generateSalePDF({
-        cart: cart,
-        patient: activePatient || undefined,
-      });
-
-      console.log("PDF generation completed");
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await processSale();
-      
-      toast({
-        title: "PDF Generated",
-        description: "Receipt PDF has been downloaded successfully.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error in PDF generation:", error);
-      toast({
-        title: "PDF Error",
-        description: "Failed to generate PDF. Check console for details.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Reverse sale
-  const reverseSale = async (sale: Sale) => {
-    try {
-      // Only update medicine stock if it's not a doctor fee entry
-      if (sale.medicineId !== "DOCTOR_FEE") {
-        const medicineRef = doc(db, "medicines", sale.medicineId);
-        const medicineSnap = await getDoc(medicineRef);
-
-        if (medicineSnap.exists()) {
-          const currentQty = medicineSnap.data().quantity ?? 0;
-          await updateDoc(medicineRef, {
-            quantity: currentQty + sale.quantity,
-          });
+        if (historyOpen) {
+            fetchAllPrescriptions();
         }
-      }
+    }, [historyOpen]);
 
-      await deleteDoc(doc(db, "sales", sale.id));
-      setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-      
-      // Recalculate total doctor fees
-      const updatedSales = todaysSales.filter((s) => s.id !== sale.id);
-      const totalDoctorFees = updatedSales.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-      setTodaysDoctorFees(totalDoctorFees);
-
-      toast({
-        title: "Sale reversed",
-        description: "Sale removed and stock updated.",
-        variant: "default",
-      });
-    } catch (err) {
-      console.error("Error reversing sale:", err);
-      toast({
-        title: "Error",
-        description: "Failed to reverse sale.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Clear cart
-  const handleReturn = () => {
-    if (cart.length === 0 && doctorFee === 0) return;
-    const confirmClear = window.confirm("Remove all medicines and doctor fee from cart?");
-    if (confirmClear) {
-      setCart([]);
-      setDoctorFee(0);
-      setActivePrescriptionId(null);
-      setActivePatient(null);
-    }
-  };
-
-  // Load prescription from history
-  const loadFromHistory = (pres: PrescriptionDoc) => {
-    if (!pres.prescription || pres.prescription.length === 0) {
-      toast({
-        title: "Empty prescription",
-        description: "This prescription has no medicines.",
-        variant: "destructive",
-      });
-      return;
-    }
-    addMultipleToCart(pres.prescription);
-    setActivePatient(pres.patient || null);
-    setHistoryOpen(false);
-    toast({
-      title: "Prescription loaded",
-      description: "Medicines added to cart from history.",
+    // Filter history prescriptions by search query
+    const filteredHistory = historyPrescriptions.filter((pres) => {
+        const patientName = pres.patient?.name?.toLowerCase() || "";
+        const doctorName = pres.patient?.referringDoctor?.toLowerCase() || "";
+        const search = searchQuery.toLowerCase();
+        return patientName.includes(search) || doctorName.includes(search);
     });
-  };
 
-  // ------------------ JSX ------------------
+    // Add single medicine
+    const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
+        const normalizedMedicine: Medicine = {
+            id: medicine.id,
+            name: medicine.name,
+            costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
+            retailPrice: Number(
+                medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
+            ),
+            quantity: Number(medicine.quantity ?? 0),
+            createdAt: medicine.created_at,
+            updatedAt: medicine.updated_at,
+        };
 
-  return (
-    <div className="p-6 relative">
-      {/* History Button */}
-      <Button
-        onClick={() => setHistoryOpen(true)}
-        className="fixed top-20 right-6 z-40 gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg"
-        variant="outline"
-      >
-        <History className="w-4 h-4" />
-        History
-      </Button>
+        const existingItem = cart.find(
+            (item) => item.medicineId === normalizedMedicine.id
+        );
+        if (existingItem) {
+            setCart(
+                cart.map((item) =>
+                    item.medicineId === normalizedMedicine.id
+                        ? { ...item, quantity: item.quantity + quantity }
+                        : item
+                )
+            );
+        } else {
+            const newItem: CartItem = {
+                medicineId: normalizedMedicine.id,
+                medicineName: normalizedMedicine.name,
+                quantity,
+                price: normalizedMedicine.retailPrice,
+                cost: normalizedMedicine.costPrice,
+                medicine: normalizedMedicine,
+                dosage: dosage || undefined,
+                instructions: instructions || undefined,
+            };
+            setCart((prev) => [...prev, newItem]);
+        }
+    };
 
-      {/* History Sidebar */}
-      {historyOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setHistoryOpen(false)}
-          />
+    // Add all medicines from a prescription
+    const addMultipleToCart = (items: {
+        id?: string;
+        name?: string;
+        qty?: number;
+        retail_price?: number;
+        cost_price?: number;
+        dosage?: string;
+        instructions?: string;
+    }[]) => {
+        for (const it of items) {
+            const medObj = {
+                id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
+                name: it.name || "Unnamed",
+                cost_price: it.cost_price ?? 0,
+                retail_price: it.retail_price ?? 0,
+                quantity: it.qty ?? 1,
+            };
+            addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
+        }
+    };
 
-          {/* Sidebar */}
-          <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-background shadow-2xl z-50 overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Prescription History
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setHistoryOpen(false)}
-                  className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
+    // Update quantity
+    const updateQuantity = (medicineId: string, newQuantity: number) => {
+        if (newQuantity <= 0) {
+            setCart(cart.filter((item) => item.medicineId !== medicineId));
+        } else {
+            setCart(
+                cart.map((item) =>
+                    item.medicineId === medicineId
+                        ? { ...item, quantity: newQuantity }
+                        : item
+                )
+            );
+        }
+    };
 
-              {/* Search Bar */}
-              <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search by patient or doctor name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-2 focus:border-purple-500"
-                />
-              </div>
+    // Totals
+    const getTotalAmount = () =>
+        cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const getTotalProfit = () =>
+        cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
+    const getGrandTotal = () => getTotalAmount() + doctorFee;
 
-              {/* History List */}
-              <div className="space-y-4">
-                {filteredHistory.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    {searchQuery ? "No results found." : "No prescription history."}
-                  </p>
-                ) : (
-                  filteredHistory.map((pres) => (
-                    <div
-                      key={pres.id}
-                      className={`medical-card p-4 border-l-4 ${
-                        pres.processed 
-                          ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-l-green-500" 
-                          : "border-l-blue-500"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="font-semibold text-lg">
-                            {pres.patient?.name ?? "Unknown Patient"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Dr. {pres.patient?.referringDoctor ?? "-"}
-                          </p>
-                          {pres.patient?.age && (
-                            <p className="text-xs text-muted-foreground">
-                              Age: {pres.patient.age} {pres.patient.gender && `• ${pres.patient.gender}`}
-                            </p>
-                          )}
-                        </div>
-                        {pres.processed && (
-                          <span className="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded-full font-medium">
-                            ✓ Processed
-                          </span>
-                        )}
-                      </div>
+    // ------------------ PROCESS SALE ------------------
+    const processSale = async () => {
+        // Allow processing even if cart is empty but doctor fee exists
+        if (cart.length === 0 && doctorFee === 0) {
+            toast({
+                title: "Empty Sale",
+                description: "Add medicines or enter doctor fee to process sale.",
+                variant: "destructive",
+            });
+            return;
+        }
 
-                      <div className="mb-3 max-h-40 overflow-y-auto">
-                        <p className="text-sm font-medium mb-2">Medicines:</p>
-                        {pres.prescription && pres.prescription.length > 0 ? (
-                          <ul className="text-sm space-y-1">
-                            {pres.prescription.map((med, idx) => (
-                              <li key={idx} className="text-muted-foreground">
-                                • {med.name} ({med.qty}x) - PKR {med.retail_price}
-                                {med.dosage && (
-                                  <span className="text-xs block ml-4 text-blue-600">
-                                    {med.dosage}
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">No medicines</p>
-                        )}
-                      </div>
+        try {
+            // Process medicines if any
+            for (const item of cart) {
+                const amount = item.price * item.quantity;
+                const profit = (item.price - item.cost) * item.quantity;
 
-                      <div className="flex justify-between items-center pt-3 border-t">
-                        <div>
-                          <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                            Total: PKR {(pres.totalRetail ?? 0).toFixed(2)}
-                          </p>
-                          {pres.processedAt && (
-                            <p className="text-xs text-muted-foreground">
-                              Processed: {pres.processedAt.toDate().toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => loadFromHistory(pres)}
-                          className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
-                        >
-                          Load to Cart
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+                const saleDoc = {
+                    amount,
+                    profit,
+                    date: new Date().toISOString().split("T")[0],
+                    timestamp: Timestamp.now(),
+                    medicine_id: item.medicineId,
+                    medicine_name: item.medicineName,
+                    quantity: item.quantity,
+                    cost_price: item.cost,
+                    retail_price: item.price,
+                    doctor_fee: 0,
+                };
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side */}
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Sales Management
-          </h1>
+                await addDoc(collection(db, "sales"), saleDoc);
 
-          {/* Active Patient Info */}
-          {activePatient && (
-            <div className="medical-card p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-l-4 border-l-blue-500 shadow-md">
-              <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                <Receipt className="w-4 h-4" />
-                Active Prescription
-              </h3>
-              <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
-              <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
-              {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
-              {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
-            </div>
-          )}
+                const medicineRef = doc(db, "medicines", item.medicineId);
+                const medicineSnap = await getDoc(medicineRef);
+                if (medicineSnap.exists()) {
+                    const currentQty = medicineSnap.data().quantity ?? 0;
+                    await updateDoc(medicineRef, {
+                        quantity: Math.max(0, currentQty - item.quantity),
+                    });
+                }
+            }
 
-          {/* Doctor Fee Input */}
-          <div className="medical-card p-4 border-l-4 border-l-teal-500 shadow-md bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
-            <h3 className="font-semibold mb-3 flex items-center gap-2 text-teal-700 dark:text-teal-300">
-              <Stethoscope className="w-4 h-4" />
-              Doctor Consultation Fee
-            </h3>
-            <div className="flex items-center gap-3">
-              <Input
-                type="number"
-                placeholder="Enter doctor fee (PKR)"
-                value={doctorFee || ""}
-                onChange={(e) => setDoctorFee(Number(e.target.value) || 0)}
-                className="flex-1 border-2 focus:border-teal-500"
-                min="0"
-              />
-              <Button
+            // Process doctor fee separately if it exists
+            if (doctorFee > 0) {
+                const doctorFeeSaleDoc = {
+                    amount: doctorFee,
+                    profit: doctorFee,
+                    date: new Date().toISOString().split("T")[0],
+                    timestamp: Timestamp.now(),
+                    medicine_id: "DOCTOR_FEE",
+                    medicine_name: "Doctor Consultation Fee",
+                    quantity: 1,
+                    cost_price: 0,
+                    retail_price: doctorFee,
+                    doctor_fee: doctorFee,
+                };
+
+                await addDoc(collection(db, "sales"), doctorFeeSaleDoc);
+            }
+
+            setCart([]);
+            setDoctorFee(0);
+            setActivePatient(null);
+
+            // Mark prescription as processed
+            if (activePrescriptionId) {
+                try {
+                    await updateDoc(doc(db, "prescriptions", activePrescriptionId), {
+                        processed: true,
+                        processedAt: Timestamp.now(),
+                    });
+                    setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
+                    setActivePrescriptionId(null);
+                } catch (err) {
+                    console.error("Failed to mark prescription as processed:", err);
+                }
+            }
+
+            toast({
+                title: "Sale processed",
+                description: "Sale saved and stock updated.",
+                variant: "default",
+            });
+
+            // Refresh today's sales
+            const today = new Date().toISOString().split("T")[0];
+            const q = query(collection(db, "sales"), where("date", "==", today));
+            const snapshot = await getDocs(q);
+            const salesData: Sale[] = snapshot.docs.map((doc) => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    amount: Number(data.amount ?? 0),
+                    profit: Number(data.profit ?? 0),
+                    date: data.date ?? "",
+                    timestamp: data.timestamp,
+                    medicineId: data.medicine_id,
+                    medicineName: data.medicine_name,
+                    quantity: Number(data.quantity ?? 0),
+                    costPrice: Number(data.cost_price ?? 0),
+                    retailPrice: Number(data.retail_price ?? 0),
+                    doctorFee: Number(data.doctor_fee ?? 0),
+                };
+            });
+            setTodaysSales(salesData);
+
+            // Recalculate total doctor fees
+            const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
+            setTodaysDoctorFees(totalDoctorFees);
+        } catch (err) {
+            console.error("Error processing sale:", err);
+            toast({
+                title: "Error",
+                description: "Failed to process sale. Check console.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Process sale & print PDF
+    const handleProcessSaleWithPDF = async () => {
+        if (cart.length === 0 && doctorFee === 0) {
+            toast({
+                title: "Empty Sale",
+                description: "Add medicines or enter doctor fee to process sale.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            console.log("Generating PDF with cart items:", cart.length);
+            console.log("Patient data:", activePatient);
+            console.log("Doctor fee:", doctorFee);
+
+            await generateSalePDF({
+                cart: cart,
+                patient: activePatient || undefined,
+            });
+
+            console.log("PDF generation completed");
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await processSale();
+
+            toast({
+                title: "PDF Generated",
+                description: "Receipt PDF has been downloaded successfully.",
+                variant: "default",
+            });
+        } catch (error) {
+            console.error("Error in PDF generation:", error);
+            toast({
+                title: "PDF Error",
+                description: "Failed to generate PDF. Check console for details.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Reverse sale
+    const reverseSale = async (sale: Sale) => {
+        try {
+            // Only update medicine stock if it's not a doctor fee entry
+            if (sale.medicineId !== "DOCTOR_FEE") {
+                const medicineRef = doc(db, "medicines", sale.medicineId);
+                const medicineSnap = await getDoc(medicineRef);
+
+                if (medicineSnap.exists()) {
+                    const currentQty = medicineSnap.data().quantity ?? 0;
+                    await updateDoc(medicineRef, {
+                        quantity: currentQty + sale.quantity,
+                    });
+                }
+            }
+
+            await deleteDoc(doc(db, "sales", sale.id));
+            setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
+
+            // Recalculate total doctor fees
+            const updatedSales = todaysSales.filter((s) => s.id !== sale.id);
+            const totalDoctorFees = updatedSales.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
+            setTodaysDoctorFees(totalDoctorFees);
+
+            toast({
+                title: "Sale reversed",
+                description: "Sale removed and stock updated.",
+                variant: "default",
+            });
+        } catch (err) {
+            console.error("Error reversing sale:", err);
+            toast({
+                title: "Error",
+                description: "Failed to reverse sale.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Clear cart
+    const handleReturn = () => {
+        if (cart.length === 0 && doctorFee === 0) return;
+        const confirmClear = window.confirm("Remove all medicines and doctor fee from cart?");
+        if (confirmClear) {
+            setCart([]);
+            setDoctorFee(0);
+            setActivePrescriptionId(null);
+            setActivePatient(null);
+        }
+    };
+
+    // Load prescription from history
+    const loadFromHistory = (pres: PrescriptionDoc) => {
+        if (!pres.prescription || pres.prescription.length === 0) {
+            toast({
+                title: "Empty prescription",
+                description: "This prescription has no medicines.",
+                variant: "destructive",
+            });
+            return;
+        }
+        addMultipleToCart(pres.prescription);
+        setActivePatient(pres.patient || null);
+        setHistoryOpen(false);
+        toast({
+            title: "Prescription loaded",
+            description: "Medicines added to cart from history.",
+        });
+    };
+
+    // ------------------ JSX ------------------
+
+    return (
+        <div className="p-6 relative">
+            {/* History Button */}
+            <Button
+                onClick={() => setHistoryOpen(true)}
+                className="fixed top-20 right-6 z-40 gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg"
                 variant="outline"
-                size="sm"
-                onClick={() => setDoctorFee(0)}
-                className="hover:bg-red-100 dark:hover:bg-red-900/20"
-              >
-                Clear
-              </Button>
-            </div>
-            {doctorFee > 0 && (
-              <p className="text-sm text-teal-600 dark:text-teal-400 mt-2 font-medium">
-                Fee Added: PKR {doctorFee.toFixed(2)}
-              </p>
-            )}
-          </div>
+            >
+                <History className="w-4 h-4" />
+                History
+            </Button>
 
-          {/* Medicine Search */}
-          <div className="medical-card p-4 border-l-4 border-l-purple-500 shadow-md">
-            <h3 className="font-semibold mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
-              <Plus className="w-4 h-4" />
-              Add Medicine to Cart
-            </h3>
-            <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-          </div>
-
-          {/* Shopping Cart */}
-          <div className="medical-card shadow-lg">
-            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg flex justify-between">
-              <h3 className="font-semibold">Shopping Cart</h3>
-              <ShoppingCart className="w-5 h-5" />
-            </div>
-
-            <div className="p-4">
-              {cart.length > 0 || doctorFee > 0 ? (
+            {/* History Sidebar */}
+            {historyOpen && (
                 <>
-                  {cart.map((item) => (
+                    {/* Overlay */}
                     <div
-                      key={item.medicineId}
-                      className="flex flex-col p-3 bg-gradient-to-r from-accent/30 to-accent/20 rounded-lg mb-3 border-l-4 border-l-blue-400"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-blue-900 dark:text-blue-100">{item.medicineName}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            PKR {item.price} each
-                          </p>
-                          {item.dosage && (
-                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                              <strong>Dosage:</strong> {item.dosage}
-                            </p>
-                          )}
-                          {item.instructions && (
-                            <p className="text-xs text-green-600 dark:text-green-400">
-                              <strong>Instructions:</strong> {item.instructions}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateQuantity(item.medicineId, item.quantity - 1)
-                            }
-                            className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateQuantity(item.medicineId, item.quantity + 1)
-                            }
-                            className="hover:bg-green-100 dark:hover:bg-green-900/20"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        <div className="text-right ml-4">
-                          <p className="font-bold text-purple-600 dark:text-purple-400">
-                            PKR {(item.price * item.quantity).toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                        className="fixed inset-0 bg-black/50 z-40"
+                        onClick={() => setHistoryOpen(false)}
+                    />
 
-                  {/* Doctor Fee Display in Cart */}
-                  {doctorFee > 0 && (
-                    <div className="flex flex-col p-3 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-lg mb-3 border-l-4 border-l-teal-500">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-teal-900 dark:text-teal-100 flex items-center gap-2">
+                    {/* Sidebar */}
+                    <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-background shadow-2xl z-50 overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                    Prescription History
+                                </h2>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setHistoryOpen(false)}
+                                    className="hover:bg-red-100 dark:hover:bg-red-900/20"
+                                >
+                                    <X className="w-5 h-5" />
+                                </Button>
+                            </div>
+
+                            {/* Search Bar */}
+                            <div className="relative mb-6">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search by patient or doctor name..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10 border-2 focus:border-purple-500"
+                                />
+                            </div>
+
+                            {/* History List */}
+                            <div className="space-y-4">
+                                {filteredHistory.length === 0 ? (
+                                    <p className="text-muted-foreground text-center py-8">
+                                        {searchQuery ? "No results found." : "No prescription history."}
+                                    </p>
+                                ) : (
+                                    filteredHistory.map((pres) => (
+                                        <div
+                                            key={pres.id}
+                                            className={`medical-card p-4 border-l-4 ${pres.processed
+                                                ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-l-green-500"
+                                                : "border-l-blue-500"
+                                                }`}
+                                        >
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <p className="font-semibold text-lg">
+                                                        {pres.patient?.name ?? "Unknown Patient"}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Dr. {pres.patient?.referringDoctor ?? "-"}
+                                                    </p>
+                                                    {pres.patient?.age && (
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Age: {pres.patient.age} {pres.patient.gender && `• ${pres.patient.gender}`}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {pres.processed && (
+                                                    <span className="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded-full font-medium">
+                                                        ✓ Processed
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="mb-3 max-h-40 overflow-y-auto">
+                                                <p className="text-sm font-medium mb-2">Medicines:</p>
+                                                {pres.prescription && pres.prescription.length > 0 ? (
+                                                    <ul className="text-sm space-y-1">
+                                                        {pres.prescription.map((med, idx) => (
+                                                            <li key={idx} className="text-muted-foreground">
+                                                                • {med.name} ({med.qty}x) - PKR {med.retail_price}
+                                                                {med.dosage && (
+                                                                    <span className="text-xs block ml-4 text-blue-600">
+                                                                        {med.dosage}
+                                                                    </span>
+                                                                )}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="text-sm text-muted-foreground">No medicines</p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-between items-center pt-3 border-t">
+                                                <div>
+                                                    <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+                                                        Total: PKR {(pres.totalRetail ?? 0).toFixed(2)}
+                                                    </p>
+                                                    {pres.processedAt && (
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Processed: {pres.processedAt.toDate().toLocaleDateString()}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => loadFromHistory(pres)}
+                                                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                                                >
+                                                    Load to Cart
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Side */}
+                <div className="space-y-6">
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Sales Management
+                    </h1>
+
+                    {/* Active Patient Info */}
+                    {activePatient && (
+                        <div className="medical-card p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-l-4 border-l-blue-500 shadow-md">
+                            <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                                <Receipt className="w-4 h-4" />
+                                Active Prescription
+                            </h3>
+                            <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
+                            <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
+                            {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
+                            {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
+                        </div>
+                    )}
+
+                    {/* Doctor Fee Input */}
+                    <div className="medical-card p-4 border-l-4 border-l-teal-500 shadow-md bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-teal-700 dark:text-teal-300">
                             <Stethoscope className="w-4 h-4" />
                             Doctor Consultation Fee
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Professional consultation
-                          </p>
+                        </h3>
+                        <div className="flex items-center gap-3">
+                            <Input
+                                type="number"
+                                placeholder="Enter doctor fee (PKR)"
+                                value={doctorFee || ""}
+                                onChange={(e) => setDoctorFee(Number(e.target.value) || 0)}
+                                className="flex-1 border-2 focus:border-teal-500"
+                                min="0"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setDoctorFee(0)}
+                                className="hover:bg-red-100 dark:hover:bg-red-900/20"
+                            >
+                                Clear
+                            </Button>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-teal-600 dark:text-teal-400">
-                            PKR {doctorFee.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-3 mt-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 rounded-lg">
-                    <div className="flex justify-between mb-2">
-                      <span className="font-medium">Medicines Subtotal:</span>
-                      <span className="font-bold text-lg">PKR {getTotalAmount().toFixed(2)}</span>
-                    </div>
-                    {doctorFee > 0 && (
-                      <div className="flex justify-between mb-2">
-                        <span className="font-medium text-teal-600 dark:text-teal-400">Doctor Fee:</span>
-                        <span className="font-bold text-lg text-teal-600 dark:text-teal-400">
-                          PKR {doctorFee.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between mb-2 text-lg border-t pt-2">
-                      <span className="font-bold">Grand Total:</span>
-                      <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
-                        PKR {getGrandTotal().toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between mb-4 pb-3 border-b">
-                      <span className="font-medium">Profit:</span>
-                      <span className="font-bold text-lg text-green-600 dark:text-green-400">
-                        PKR {(getTotalProfit() + doctorFee).toFixed(2)}
-                      </span>
-                    </div>
-
-                    {activePrescriptionId ? (
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex space-x-2">
-                          <Button 
-                            onClick={processSale} 
-                            className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                          >
-                            <Receipt className="w-4 h-4" /> Process Sale
-                          </Button>
-                          <Button
-                            onClick={handleProcessSaleWithPDF}
-                            className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                          >
-                            <FileDown className="w-4 h-4" /> Print PDF
-                          </Button>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          onClick={handleReturn}
-                          className="w-full hover:bg-red-100 dark:hover:bg-red-900/20"
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" /> Return
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex space-x-3">
-                        <Button 
-                          onClick={processSale} 
-                          className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                        >
-                          <Receipt className="w-4 h-4" /> Process Sale
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={handleReturn}
-                          className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                        >
-                          <RotateCcw className="w-4 h-4" /> Return
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">Your cart is empty</p>
-                  <p className="text-sm text-muted-foreground mt-2">Add medicines or enter doctor fee</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side */}
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Today's Sales Summary
-            </h2>
-            {/* Reveal Button */}
-            <Button
-              onClick={() => setIsRevealed(!isRevealed)}
-              variant="outline"
-              size="sm"
-              className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-md"
-            >
-              {isRevealed ? (
-                <>
-                  <EyeOff className="w-4 h-4" />
-                  Hide Totals
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4" />
-                  Reveal Totals
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="stats-card-primary p-4 shadow-lg rounded-lg border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Sales (Medicines Only)</p>
-              <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                {isRevealed ? (
-                  `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.amount ?? 0), 0).toFixed(2)}`
-                ) : (
-                  <span className="text-gray-400">••••••</span>
-                )}
-              </h3>
-            </div>
-            <div className="stats-card-success p-4 shadow-lg rounded-lg border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
-              <p className="text-sm font-medium text-green-700 dark:text-green-300">Total Profit (Medicines Only)</p>
-              <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
-                {isRevealed ? (
-                  `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.profit ?? 0), 0).toFixed(2)}`
-                ) : (
-                  <span className="text-gray-400">••••••</span>
-                )}
-              </h3>
-            </div>
-          </div>
-
-          {/* Doctor Fees Card */}
-          <div className="stats-card p-4 shadow-lg rounded-lg border-l-4 border-l-teal-500 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-teal-700 dark:text-teal-300 flex items-center gap-2">
-                  <Stethoscope className="w-4 h-4" />
-                  Doctor Fees Today
-                </p>
-                <h3 className="text-2xl font-bold text-teal-900 dark:text-teal-100">
-                  {isRevealed ? (
-                    `PKR ${todaysDoctorFees.toFixed(2)}`
-                  ) : (
-                    <span className="text-gray-400">••••••</span>
-                  )}
-                </h3>
-              </div>
-            </div>
-          </div>
-
-          {/* Prescriptions */}
-          <div className="medical-card shadow-lg">
-            <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-t-lg flex justify-between">
-              <h3 className="font-semibold">Prescriptions</h3>
-              <Receipt className="w-5 h-5" />
-            </div>
-            <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-              {prescriptions.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No prescriptions found.</p>
-              ) : (
-                prescriptions.map((pres) => (
-                  <div
-                    key={pres.id}
-                    className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg flex justify-between border-l-4 border-l-purple-500 hover:shadow-md transition-shadow"
-                  >
-                    <div>
-                      <p className="font-medium text-purple-900 dark:text-purple-100">
-                        {pres.patient?.name ?? "Unknown Patient"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Doctor: {pres.patient?.referringDoctor ?? "-"} • 
-                        <span className="font-semibold text-purple-600 dark:text-purple-400 ml-1">
-                          PKR {(pres.totalRetail ?? 0).toFixed(2)}
-                        </span>
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        if (!pres.prescription || pres.prescription.length === 0) {
-                          toast({
-                            title: "Empty prescription",
-                            description: "This prescription has no medicines.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        addMultipleToCart(pres.prescription);
-                        setActivePrescriptionId(pres.id);
-                        setActivePatient(pres.patient || null);
-                        toast({
-                          title: "Prescription loaded",
-                          description: "All medicines added to cart.",
-                        });
-                      }}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                    >
-                      Add to Cart
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>    
-                
-         {/* Recent Sales */}
-         <div className="medical-card shadow-lg">
-            <div className="p-4 border-b bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
-              <h3 className="font-semibold">Recent Sales</h3>
-            </div>
-            <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-              {todaysSales.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No sales yet today.</p>
-              ) : (
-                todaysSales.map((s) => (
-                  <div
-                    key={s.id}
-                    className={`flex justify-between items-center p-3 rounded-lg border-l-4 hover:shadow-md transition-shadow ${
-                      s.medicineId === "DOCTOR_FEE"
-                        ? "bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 border-l-teal-500"
-                        : "bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-l-orange-500"
-                    }`}
-                  >
-                    <div>
-                      <p className={`font-medium flex items-center gap-2 ${
-                        s.medicineId === "DOCTOR_FEE"
-                          ? "text-teal-900 dark:text-teal-100"
-                          : "text-orange-900 dark:text-orange-100"
-                      }`}>
-                        {s.medicineId === "DOCTOR_FEE" && <Stethoscope className="w-4 h-4" />}
-                        {s.medicineName}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {s.medicineId === "DOCTOR_FEE" ? (
-                          <>Consultation Fee = </>
-                        ) : (
-                          <>{s.quantity} × PKR {s.retailPrice} = </>
+                        {doctorFee > 0 && (
+                            <p className="text-sm text-teal-600 dark:text-teal-400 mt-2 font-medium">
+                                Fee Added: PKR {doctorFee.toFixed(2)}
+                            </p>
                         )}
-                        <span className={`font-semibold ml-1 ${
-                          s.medicineId === "DOCTOR_FEE"
-                            ? "text-teal-600 dark:text-teal-400"
-                            : "text-orange-600 dark:text-orange-400"
-                        }`}>
-                          PKR {s.amount.toFixed(2)}
-                        </span>
-                      </p>
                     </div>
-                    <Button
-                       size="sm"
-                       variant="destructive"
-                       onClick={() => reverseSale(s)}
-                       className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
-                     >
-                       Reverse
-                     </Button>
-                   </div>
-                 ))
-               )}
-             </div>
-           </div>
-         </div>
-       </div>
-     </div>
-  );
+
+                    {/* Medicine Search */}
+                    <div className="medical-card p-4 border-l-4 border-l-purple-500 shadow-md">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                            <Plus className="w-4 h-4" />
+                            Add Medicine to Cart
+                        </h3>
+                        <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
+                    </div>
+
+                    {/* Shopping Cart */}
+                    <div className="medical-card shadow-lg">
+                        <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg flex justify-between">
+                            <h3 className="font-semibold">Shopping Cart</h3>
+                            <ShoppingCart className="w-5 h-5" />
+                        </div>
+
+                        <div className="p-4">
+                            {cart.length > 0 || doctorFee > 0 ? (
+                                <>
+                                    {cart.map((item) => (
+                                        <div
+                                            key={item.medicineId}
+                                            className="flex flex-col p-3 bg-gradient-to-r from-accent/30 to-accent/20 rounded-lg mb-3 border-l-4 border-l-blue-400"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="font-medium text-blue-900 dark:text-blue-100">{item.medicineName}</h4>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        PKR {item.price} each
+                                                    </p>
+                                                    {item.dosage && (
+                                                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                            <strong>Dosage:</strong> {item.dosage}
+                                                        </p>
+                                                    )}
+                                                    {item.instructions && (
+                                                        <p className="text-xs text-green-600 dark:text-green-400">
+                                                            <strong>Instructions:</strong> {item.instructions}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            updateQuantity(item.medicineId, item.quantity - 1)
+                                                        }
+                                                        className="hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                    >
+                                                        <Minus className="w-3 h-3" />
+                                                    </Button>
+                                                    <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            updateQuantity(item.medicineId, item.quantity + 1)
+                                                        }
+                                                        className="hover:bg-green-100 dark:hover:bg-green-900/20"
+                                                    >
+                                                        <Plus className="w-3 h-3" />
+                                                    </Button>
+                                                </div>
+                                                <div className="text-right ml-4">
+                                                    <p className="font-bold text-purple-600 dark:text-purple-400">
+                                                        PKR {(item.price * item.quantity).toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Doctor Fee Display in Cart */}
+                                    {doctorFee > 0 && (
+                                        <div className="flex flex-col p-3 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-lg mb-3 border-l-4 border-l-teal-500">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="font-medium text-teal-900 dark:text-teal-100 flex items-center gap-2">
+                                                        <Stethoscope className="w-4 h-4" />
+                                                        Doctor Consultation Fee
+                                                    </h4>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Professional consultation
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-teal-600 dark:text-teal-400">
+                                                        PKR {doctorFee.toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="border-t pt-3 mt-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 rounded-lg">
+                                        <div className="flex justify-between mb-2">
+                                            <span className="font-medium">Medicines Subtotal:</span>
+                                            <span className="font-bold text-lg">PKR {getTotalAmount().toFixed(2)}</span>
+                                        </div>
+                                        {doctorFee > 0 && (
+                                            <div className="flex justify-between mb-2">
+                                                <span className="font-medium text-teal-600 dark:text-teal-400">Doctor Fee:</span>
+                                                <span className="font-bold text-lg text-teal-600 dark:text-teal-400">
+                                                    PKR {doctorFee.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between mb-2 text-lg border-t pt-2">
+                                            <span className="font-bold">Grand Total:</span>
+                                            <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
+                                                PKR {getGrandTotal().toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between mb-4 pb-3 border-b">
+                                            <span className="font-medium">Profit:</span>
+                                            <span className="font-bold text-lg text-green-600 dark:text-green-400">
+                                                PKR {(getTotalProfit() + doctorFee).toFixed(2)}
+                                            </span>
+                                        </div>
+
+                                        {activePrescriptionId ? (
+                                            <div className="flex flex-col space-y-2">
+                                                <div className="flex space-x-2">
+                                                    <Button
+                                                        onClick={processSale}
+                                                        className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                                    >
+                                                        <Receipt className="w-4 h-4" /> Process Sale
+                                                    </Button>
+                                                    <Button
+                                                        onClick={handleProcessSaleWithPDF}
+                                                        className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                                                    >
+                                                        <FileDown className="w-4 h-4" /> Print PDF
+                                                    </Button>
+                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={handleReturn}
+                                                    className="w-full hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                >
+                                                    <RotateCcw className="w-4 h-4 mr-2" /> Return
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex space-x-3">
+                                                <Button
+                                                    onClick={processSale}
+                                                    className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                                >
+                                                    <Receipt className="w-4 h-4" /> Process Sale
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={handleReturn}
+                                                    className="hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                >
+                                                    <RotateCcw className="w-4 h-4" /> Return
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                                    <p className="text-muted-foreground">Your cart is empty</p>
+                                    <p className="text-sm text-muted-foreground mt-2">Add medicines or enter doctor fee</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Side */}
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                            Today's Sales Summary
+                        </h2>
+                        {/* Reveal Button */}
+                        <Button
+                            onClick={() => setIsRevealed(!isRevealed)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-md"
+                        >
+                            {isRevealed ? (
+                                <>
+                                    <EyeOff className="w-4 h-4" />
+                                    Hide Totals
+                                </>
+                            ) : (
+                                <>
+                                    <Eye className="w-4 h-4" />
+                                    Reveal Totals
+                                </>
+                            )}
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="stats-card-primary p-4 shadow-lg rounded-lg border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
+                            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Sales (Medicines Only)</p>
+                            <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                {isRevealed ? (
+                                    `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.amount ?? 0), 0).toFixed(2)}`
+                                ) : (
+                                    <span className="text-gray-400">••••••</span>
+                                )}
+                            </h3>
+                        </div>
+                        <div className="stats-card-success p-4 shadow-lg rounded-lg border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+                            <p className="text-sm font-medium text-green-700 dark:text-green-300">Total Profit (Medicines Only)</p>
+                            <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                {isRevealed ? (
+                                    `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.profit ?? 0), 0).toFixed(2)}`
+                                ) : (
+                                    <span className="text-gray-400">••••••</span>
+                                )}
+                            </h3>
+                        </div>
+                    </div>
+
+                    {/* Doctor Fees Card */}
+                    <div className="stats-card p-4 shadow-lg rounded-lg border-l-4 border-l-teal-500 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-teal-700 dark:text-teal-300 flex items-center gap-2">
+                                    <Stethoscope className="w-4 h-4" />
+                                    Doctor Fees Today
+                                </p>
+                                <h3 className="text-2xl font-bold text-teal-900 dark:text-teal-100">
+                                    {isRevealed ? (
+                                        `PKR ${todaysDoctorFees.toFixed(2)}`
+                                    ) : (
+                                        <span className="text-gray-400">••••••</span>
+                                    )}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Prescriptions */}
+                    <div className="medical-card shadow-lg">
+                        <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-t-lg flex justify-between">
+                            <h3 className="font-semibold">Prescriptions</h3>
+                            <Receipt className="w-5 h-5" />
+                        </div>
+                        <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
+                            {prescriptions.length === 0 ? (
+                                <p className="text-muted-foreground text-center py-4">No prescriptions found.</p>
+                            ) : (
+                                prescriptions.map((pres) => (
+                                    <div
+                                        key={pres.id}
+                                        className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg flex justify-between border-l-4 border-l-purple-500 hover:shadow-md transition-shadow"
+                                    >
+                                        <div>
+                                            <p className="font-medium text-purple-900 dark:text-purple-100">
+                                                {pres.patient?.name ?? "Unknown Patient"}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Doctor: {pres.patient?.referringDoctor ?? "-"} •
+                                                <span className="font-semibold text-purple-600 dark:text-purple-400 ml-1">
+                                                    PKR {(pres.totalRetail ?? 0).toFixed(2)}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                if (!pres.prescription || pres.prescription.length === 0) {
+                                                    toast({
+                                                        title: "Empty prescription",
+                                                        description: "This prescription has no medicines.",
+                                                        variant: "destructive",
+                                                    });
+                                                    return;
+                                                }
+                                                addMultipleToCart(pres.prescription);
+                                                setActivePrescriptionId(pres.id);
+                                                setActivePatient(pres.patient || null);
+                                                toast({
+                                                    title: "Prescription loaded",
+                                                    description: "All medicines added to cart.",
+                                                });
+                                            }}
+                                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                                        >
+                                            Add to Cart
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Recent Sales */}
+                    <div className="medical-card shadow-lg">
+                        <div className="p-4 border-b bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
+                            <h3 className="font-semibold">Recent Sales</h3>
+                        </div>
+                        <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
+                            {todaysSales.length === 0 ? (
+                                <p className="text-muted-foreground text-center py-4">No sales yet today.</p>
+                            ) : (
+                                todaysSales.map((s) => (
+                                    <div
+                                        key={s.id}
+                                        className={`flex justify-between items-center p-3 rounded-lg border-l-4 hover:shadow-md transition-shadow ${s.medicineId === "DOCTOR_FEE"
+                                            ? "bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 border-l-teal-500"
+                                            : "bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-l-orange-500"
+                                            }`}
+                                    >
+                                        <div>
+                                            <p className={`font-medium flex items-center gap-2 ${s.medicineId === "DOCTOR_FEE"
+                                                ? "text-teal-900 dark:text-teal-100"
+                                                : "text-orange-900 dark:text-orange-100"
+                                                }`}>
+                                                {s.medicineId === "DOCTOR_FEE" && <Stethoscope className="w-4 h-4" />}
+                                                {s.medicineName}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {s.medicineId === "DOCTOR_FEE" ? (
+                                                    <>Consultation Fee = </>
+                                                ) : (
+                                                    <>{s.quantity} × PKR {s.retailPrice} = </>
+                                                )}
+                                                <span className={`font-semibold ml-1 ${s.medicineId === "DOCTOR_FEE"
+                                                    ? "text-teal-600 dark:text-teal-400"
+                                                    : "text-orange-600 dark:text-orange-400"
+                                                    }`}>
+                                                    PKR {s.amount.toFixed(2)}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => reverseSale(s)}
+                                            className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                                        >
+                                            Reverse
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

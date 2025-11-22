@@ -89,10 +89,10 @@ export default function InventoryMerged() {
       const snapshot = await getDocs(collection(db, "medicines"));
       const meds = snapshot.docs.map(
         (docSnap) =>
-          ({
-            id: docSnap.id,
-            ...(docSnap.data() as Omit<Medicine, "id">),
-          } as Medicine)
+        ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<Medicine, "id">),
+        } as Medicine)
       );
 
       meds.sort((a, b) => a.name.localeCompare(b.name));
@@ -371,25 +371,26 @@ export default function InventoryMerged() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8 pb-20 md:pb-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-2xl p-4 md:p-6 shadow-lg border border-slate-200">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Inventory Management
             </h1>
-            <p className="text-slate-600 mt-1 flex items-center gap-2">
+            <p className="text-slate-600 mt-1 flex items-center gap-2 text-sm md:text-base">
               <Package className="w-4 h-4" />
               Manage your medicine stock and inventory
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" className="gap-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition-all" asChild>
+          <div className="grid grid-cols-2 sm:flex flex-wrap gap-2 md:gap-3">
+            <Button variant="outline" className="gap-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition-all text-xs md:text-sm px-2 md:px-4" asChild>
               <label>
-                <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
-                Import Excel
+                <FileSpreadsheet className="w-3 h-3 md:w-4 md:h-4 text-indigo-600" />
+                <span className="hidden sm:inline">Import Excel</span>
+                <span className="sm:hidden">Import</span>
                 <input
                   type="file"
                   accept=".xlsx, .xls"
@@ -399,15 +400,17 @@ export default function InventoryMerged() {
               </label>
             </Button>
 
-            <Button variant="outline" className="gap-2 border-green-200 hover:bg-green-50 hover:border-green-300 transition-all" onClick={handleBackup}>
-              <Download className="w-4 h-4 text-green-600" />
-              Backup DB
+            <Button variant="outline" className="gap-2 border-green-200 hover:bg-green-50 hover:border-green-300 transition-all text-xs md:text-sm px-2 md:px-4" onClick={handleBackup}>
+              <Download className="w-3 h-3 md:w-4 md:h-4 text-green-600" />
+              <span className="hidden sm:inline">Backup DB</span>
+              <span className="sm:hidden">Backup</span>
             </Button>
 
-            <Button variant="outline" className="gap-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all" asChild>
+            <Button variant="outline" className="gap-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-all text-xs md:text-sm px-2 md:px-4" asChild>
               <label>
-                <Upload className="w-4 h-4 text-blue-600" />
-                Restore DB
+                <Upload className="w-3 h-3 md:w-4 md:h-4 text-blue-600" />
+                <span className="hidden sm:inline">Restore DB</span>
+                <span className="sm:hidden">Restore</span>
                 <input
                   type="file"
                   accept=".json"
@@ -417,18 +420,18 @@ export default function InventoryMerged() {
               </label>
             </Button>
 
-            <Button 
-              className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30 transition-all" 
+            <Button
+              className="col-span-2 sm:col-span-1 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30 transition-all text-xs md:text-sm"
               onClick={() => setOpenStockDialog(true)}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3 h-3 md:w-4 md:h-4" />
               Add Stock
             </Button>
           </div>
         </div>
 
         {/* Search */}
-        <div className="max-w-md">
+        <div className="max-w-md w-full">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
@@ -436,7 +439,7 @@ export default function InventoryMerged() {
               placeholder="Search medicines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 rounded-xl bg-white border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="pl-12 h-12 rounded-xl bg-white border-slate-200 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full"
             />
           </div>
         </div>
@@ -497,9 +500,8 @@ export default function InventoryMerged() {
                 {filteredMedicines.map((medicine, i) => (
                   <tr
                     key={medicine.id}
-                    className={`border-b border-slate-100 hover:bg-indigo-50/50 transition-colors ${
-                      i % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                    }`}
+                    className={`border-b border-slate-100 hover:bg-indigo-50/50 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-slate-50/50"
+                      }`}
                   >
                     <td className="p-4 font-semibold text-slate-800">{medicine.name}</td>
                     <td className="p-4">{getStockBadge(medicine.quantity)}</td>
@@ -543,57 +545,57 @@ export default function InventoryMerged() {
             <div className="space-y-4 mt-4">
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Medicine Name</label>
-                <Input 
-                  name="name" 
-                  placeholder="Enter medicine name" 
-                  value={form.name} 
-                  onChange={handleChange} 
+                <Input
+                  name="name"
+                  placeholder="Enter medicine name"
+                  value={form.name}
+                  onChange={handleChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Quantity</label>
-                <Input 
-                  name="quantity" 
+                <Input
+                  name="quantity"
                   type="number"
-                  placeholder="Enter quantity" 
-                  value={form.quantity} 
+                  placeholder="Enter quantity"
+                  value={form.quantity}
                   onChange={handleChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Cost Price (PKR)</label>
-                <Input 
-                  name="cost_price" 
+                <Input
+                  name="cost_price"
                   type="number"
-                  placeholder="Enter cost price" 
-                  value={form.cost_price} 
+                  placeholder="Enter cost price"
+                  value={form.cost_price}
                   onChange={handleChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Retail Price (PKR)</label>
-                <Input 
-                  name="retail_price" 
+                <Input
+                  name="retail_price"
                   type="number"
-                  placeholder="Enter retail price" 
-                  value={form.retail_price} 
+                  placeholder="Enter retail price"
+                  value={form.retail_price}
                   onChange={handleChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setOpenDialog(false)}
                 className="rounded-xl"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleSubmit}
                 className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               >
@@ -711,15 +713,15 @@ export default function InventoryMerged() {
                 )}
 
                 <div className="flex justify-between pt-4 border-t border-slate-200">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setOpenNewMedDialog(true)}
                     className="gap-2 border-green-300 hover:bg-green-50 text-green-700 rounded-xl"
                   >
                     <Plus className="w-4 h-4" />
                     Add New Medicine
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleApplyStock}
                     className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg"
                   >
@@ -746,52 +748,52 @@ export default function InventoryMerged() {
                   const med = medicines.find((m) => m.id === id);
                   return med && addQty > 0;
                 }) && (
-                  <div>
-                    <h3 className="font-bold text-lg mb-3 text-slate-800 flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
-                      Updated Existing Medicines
-                    </h3>
-                    <div className="border border-slate-200 rounded-xl mb-4 max-h-[250px] overflow-y-auto shadow-sm bg-white">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gradient-to-r from-blue-50 to-cyan-50 sticky top-0">
-                          <tr>
-                            <th className="p-3 text-left font-semibold text-slate-700">Medicine Name</th>
-                            <th className="p-3 text-left font-semibold text-slate-700">Old Qty</th>
-                            <th className="p-3 text-left font-semibold text-slate-700">Add</th>
-                            <th className="p-3 text-left font-semibold text-slate-700">New Qty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(stockChanges).map(([id, addQty]) => {
-                            const med = medicines.find((m) => m.id === id);
-                            if (!med || addQty <= 0) return null;
-                            const newQty = med.quantity + addQty;
-                            return (
-                              <tr key={id} className="border-t border-slate-100 hover:bg-blue-50/50 transition-colors">
-                                <td className="p-3 font-semibold text-slate-800">{med.name}</td>
-                                <td className="p-3">
-                                  <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-lg font-medium">
-                                    {med.quantity}
-                                  </span>
-                                </td>
-                                <td className="p-3">
-                                  <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-bold shadow-sm">
-                                    +{addQty}
-                                  </span>
-                                </td>
-                                <td className="p-3">
-                                  <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-bold shadow-sm">
-                                    {newQty}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    <div>
+                      <h3 className="font-bold text-lg mb-3 text-slate-800 flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                        Updated Existing Medicines
+                      </h3>
+                      <div className="border border-slate-200 rounded-xl mb-4 max-h-[250px] overflow-y-auto shadow-sm bg-white">
+                        <table className="w-full text-sm">
+                          <thead className="bg-gradient-to-r from-blue-50 to-cyan-50 sticky top-0">
+                            <tr>
+                              <th className="p-3 text-left font-semibold text-slate-700">Medicine Name</th>
+                              <th className="p-3 text-left font-semibold text-slate-700">Old Qty</th>
+                              <th className="p-3 text-left font-semibold text-slate-700">Add</th>
+                              <th className="p-3 text-left font-semibold text-slate-700">New Qty</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(stockChanges).map(([id, addQty]) => {
+                              const med = medicines.find((m) => m.id === id);
+                              if (!med || addQty <= 0) return null;
+                              const newQty = med.quantity + addQty;
+                              return (
+                                <tr key={id} className="border-t border-slate-100 hover:bg-blue-50/50 transition-colors">
+                                  <td className="p-3 font-semibold text-slate-800">{med.name}</td>
+                                  <td className="p-3">
+                                    <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-lg font-medium">
+                                      {med.quantity}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-bold shadow-sm">
+                                      +{addQty}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-bold shadow-sm">
+                                      {newQty}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Section 2: New Medicines */}
                 {newMedicines.length > 0 && (
@@ -830,14 +832,14 @@ export default function InventoryMerged() {
                 )}
 
                 <DialogFooter className="mt-6 pt-4 border-t border-slate-200">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setShowSummary(false)}
                     className="rounded-xl"
                   >
                     Back to Edit
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleConfirmStock}
                     className="gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg"
                   >
@@ -862,57 +864,57 @@ export default function InventoryMerged() {
             <div className="space-y-4 mt-6">
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Medicine Name</label>
-                <Input 
-                  name="name" 
-                  placeholder="Enter medicine name" 
-                  value={newForm.name} 
+                <Input
+                  name="name"
+                  placeholder="Enter medicine name"
+                  value={newForm.name}
                   onChange={handleNewMedicineChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Quantity</label>
-                <Input 
-                  name="quantity" 
-                  type="number" 
-                  placeholder="Enter quantity" 
-                  value={newForm.quantity} 
+                <Input
+                  name="quantity"
+                  type="number"
+                  placeholder="Enter quantity"
+                  value={newForm.quantity}
                   onChange={handleNewMedicineChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Cost Price (PKR)</label>
-                <Input 
-                  name="cost_price" 
-                  type="number" 
-                  placeholder="Enter cost price" 
-                  value={newForm.cost_price} 
+                <Input
+                  name="cost_price"
+                  type="number"
+                  placeholder="Enter cost price"
+                  value={newForm.cost_price}
                   onChange={handleNewMedicineChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2 text-slate-700">Retail Price (PKR)</label>
-                <Input 
-                  name="retail_price" 
-                  type="number" 
-                  placeholder="Enter retail price" 
-                  value={newForm.retail_price} 
+                <Input
+                  name="retail_price"
+                  type="number"
+                  placeholder="Enter retail price"
+                  value={newForm.retail_price}
                   onChange={handleNewMedicineChange}
                   className="rounded-xl border-slate-300 focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setOpenNewMedDialog(false)}
                 className="rounded-xl"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleAddNewMedicineTemp}
                 className="gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg"
               >

@@ -29,7 +29,7 @@
 //   const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
 //   const [loading, setLoading] = useState(false);
 //   const [isRevealed, setIsRevealed] = useState(true);
-  
+
 //   // Reorder states
 //   const [isReorderMode, setIsReorderMode] = useState(false);
 //   const [reorderCart, setReorderCart] = useState<any[]>([]);
@@ -147,7 +147,7 @@
 //       })
 //     );
 //   };
-  
+
 
 
 //   // Remove from cart
@@ -670,7 +670,7 @@ export default function Dashboard() {
   const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRevealed, setIsRevealed] = useState(true);
-  
+
   // Reorder states
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [reorderCart, setReorderCart] = useState<any[]>([]);
@@ -781,7 +781,7 @@ export default function Dashboard() {
       })
     );
   };
-  
+
   // Remove from cart
   const removeFromCart = (medicineId: string) => {
     setReorderCart(reorderCart.filter((item) => item.medicineId !== medicineId));
@@ -831,51 +831,55 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Dashboard Overview
           </h1>
-          <p className="text-muted-foreground mt-2 flex items-center gap-2">
+          <p className="text-muted-foreground mt-2 flex items-center gap-2 text-sm md:text-base">
             <Activity className="w-4 h-4" />
             Real-time insights for your medical store
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full md:w-auto">
           <Button
             onClick={() => setIsRevealed(!isRevealed)}
             variant="outline"
-            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-lg"
+            className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-lg"
           >
             {isRevealed ? (
               <>
                 <EyeOff className="w-4 h-4" />
-                Hide Values
+                <span className="hidden sm:inline">Hide Values</span>
+                <span className="sm:hidden">Hide</span>
               </>
             ) : (
               <>
                 <Eye className="w-4 h-4" />
-                Show Values
+                <span className="hidden sm:inline">Show Values</span>
+                <span className="sm:hidden">Show</span>
               </>
             )}
           </Button>
           <Button
             onClick={fetchDashboardData}
             variant="outline"
-            className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-none shadow-lg"
+            className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-none shadow-lg"
             disabled={loading}
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Refreshing...
+                <span className="hidden sm:inline">Refreshing...</span>
+                <span className="sm:hidden">...</span>
               </>
             ) : (
               <>
                 <RefreshCw className="w-4 h-4" />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
+                <span className="sm:hidden">Refresh</span>
               </>
             )}
           </Button>
@@ -1063,28 +1067,25 @@ export default function Dashboard() {
                   {filteredLowStockAlerts.map((alert, index) => (
                     <div
                       key={alert.medicineId}
-                      className={`flex items-center justify-between p-5 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg ${
-                        index % 3 === 0
-                          ? "bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-l-red-500"
-                          : index % 3 === 1
+                      className={`flex items-center justify-between p-5 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg ${index % 3 === 0
+                        ? "bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-l-red-500"
+                        : index % 3 === 1
                           ? "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 border-l-orange-500"
                           : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-l-yellow-500"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-4 flex-1">
                         <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                            alert.currentStock < 5
-                              ? "bg-red-200 dark:bg-red-900"
-                              : "bg-orange-200 dark:bg-orange-900"
-                          }`}
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${alert.currentStock < 5
+                            ? "bg-red-200 dark:bg-red-900"
+                            : "bg-orange-200 dark:bg-orange-900"
+                            }`}
                         >
                           <AlertTriangle
-                            className={`w-6 h-6 ${
-                              alert.currentStock < 5
-                                ? "text-red-600 dark:text-red-300"
-                                : "text-orange-600 dark:text-orange-300"
-                            }`}
+                            className={`w-6 h-6 ${alert.currentStock < 5
+                              ? "text-red-600 dark:text-red-300"
+                              : "text-orange-600 dark:text-orange-300"
+                              }`}
                           />
                         </div>
                         <div className="flex-1">

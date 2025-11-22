@@ -136,26 +136,26 @@ export default function Demand() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Demand Analysis
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Analyze medicine demand patterns and trends
           </p>
         </div>
-        <Button onClick={exportAnalysis} variant="outline" className="gap-2">
+        <Button onClick={exportAnalysis} variant="outline" className="gap-2 w-full md:w-auto">
           <Download className="w-4 h-4" />
           Export PDF
         </Button>
       </div>
 
       {/* Date Range Filter */}
-      <div className="medical-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
+      <div className="medical-card p-4 md:p-6">
+        <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">
           Analysis Period
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -265,9 +265,8 @@ export default function Demand() {
                   <div
                     className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-500"
                     style={{
-                      width: `${
-                        (medicine.sales / topMedicines[0].sales) * 100
-                      }%`,
+                      width: `${(medicine.sales / topMedicines[0].sales) * 100
+                        }%`,
                     }}
                   ></div>
                 </div>

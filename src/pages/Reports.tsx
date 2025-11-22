@@ -363,7 +363,7 @@
 //         orderBy("date", "asc")
 //       );
 //       const snap = await getDocs(q);
-      
+
 //       // normalize numbers to avoid "1" or string issues
 //       const allSales = snap.docs.map((d) => {
 //         const data = d.data();
@@ -400,11 +400,11 @@
 //   // Total sales and profit from MEDICINES ONLY
 //   const totalSales = medicineSales.reduce((s, r) => s + num(r.amount), 0);
 //   const totalProfit = medicineSales.reduce((s, r) => s + num(r.profit), 0);
-  
+
 //   // Total from DOCTOR FEES ONLY
 //   // For doctor fees, amount and profit are the same
 //   const totalDoctorFees = doctorFees.reduce((s, r) => s + num(r.amount), 0); 
-  
+
 //   // Grand total
 //   const grandTotal = totalSales + totalDoctorFees;
 
@@ -481,7 +481,7 @@
 //       });
 
 //       const finalY = (doc as any).lastAutoTable?.finalY ?? 100;
-      
+
 //       // --- Updated PDF Summary ---
 //       doc.setFontSize(12);
 //       let yPos = finalY + 24;
@@ -491,7 +491,7 @@
 //       yPos += 18;
 //       doc.text(`Total Doctor Fees: ${formatINR(totalDoctorFees)}`, 40, yPos);
 //       yPos += 22;
-      
+
 //       doc.setFontSize(14);
 //       doc.setFont(undefined, 'bold');
 //       doc.text(`Grand Total (Sales + Fees): ${formatINR(grandTotal)}`, 40, yPos);
@@ -797,7 +797,7 @@ export default function Reports() {
         orderBy("date", "asc")
       );
       const snap = await getDocs(q);
-      
+
       const allSales = snap.docs.map((d) => {
         const data = d.data();
         return {
@@ -893,7 +893,7 @@ export default function Reports() {
       });
 
       const finalY = (doc as any).lastAutoTable?.finalY ?? 100;
-      
+
       doc.setFontSize(12);
       let yPos = finalY + 24;
       doc.text(`Total Medicine Sales: ${formatINR(totalSales)}`, 40, yPos);
@@ -902,7 +902,7 @@ export default function Reports() {
       yPos += 18;
       doc.text(`Total Doctor Fees: ${formatINR(totalDoctorFees)}`, 40, yPos);
       yPos += 22;
-      
+
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.text(`Grand Total (Sales + Fees): ${formatINR(grandTotal)}`, 40, yPos);
@@ -914,20 +914,22 @@ export default function Reports() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-6">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
           Reports & Analytics
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm md:text-base text-muted-foreground">
           Generate detailed reports and analyze your business performance
         </p>
       </div>
 
-      <div className="medical-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Generate Custom Report</h2>
+      {/* Controls */}
+      <div className="medical-card p-4 md:p-6">
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Generate Custom Report</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium mb-2">Start Date</label>
             <div className="relative">
@@ -959,7 +961,7 @@ export default function Reports() {
               Report Type
             </label>
             <select
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border rounded-md bg-background"
               value={reportType}
               onChange={(e) => setReportType(e.target.value as ReportType)}
             >
@@ -977,8 +979,9 @@ export default function Reports() {
           </div>
         </div>
 
+        {/* Export PDF only */}
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={exportToPDF} className="gap-2">
+          <Button variant="outline" onClick={exportToPDF} className="gap-2 w-full sm:w-auto">
             <FileText className="w-4 h-4" />
             Export PDF
           </Button>
