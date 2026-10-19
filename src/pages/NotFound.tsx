@@ -1,38 +1,30 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { Home, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
+import { Link } from "react-router-dom";
+import { AlertCircle, ArrowLeft, Home } from "lucide-react";
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
+export const NotFound: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="text-center max-w-md">
-        <div className="medical-card p-8">
-          <AlertCircle className="w-16 h-16 text-warning mx-auto mb-6" />
-          <h1 className="text-4xl font-bold text-foreground mb-4">404</h1>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Page Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The page you're looking for doesn't exist in the Medical Store Management System.
-          </p>
-          <Button asChild className="gap-2">
-            <a href="/">
-              <Home className="w-4 h-4" />
-              Return to Dashboard
-            </a>
-          </Button>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md p-8 rounded-3xl bg-card border border-border shadow-2xl text-center space-y-5">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
+          <AlertCircle className="w-8 h-8" />
         </div>
+
+        <div className="space-y-1">
+          <h2 className="text-3xl font-extrabold text-foreground">404</h2>
+          <p className="text-sm text-muted-foreground">
+            The requested pharmacy module or page could not be located.
+          </p>
+        </div>
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs font-bold shadow-md shadow-primary/20 transition-all"
+        >
+          <Home className="w-4 h-4" />
+          <span>Back to Dashboard</span>
+        </Link>
       </div>
     </div>
   );
 };
-
-export default NotFound;

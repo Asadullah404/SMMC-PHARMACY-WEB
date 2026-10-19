@@ -1,5772 +1,797 @@
-
-
-// // // // // Sales.tsx
-// // // // "use client";
-
-// // // // import { useState, useEffect } from "react";
-// // // // import {
-// // // //   ShoppingCart,
-// // // //   Plus,
-// // // //   Minus,
-// // // //   Receipt,
-// // // //   RotateCcw,
-// // // // } from "lucide-react";
-// // // // import { Button } from "@/components/ui/button";
-// // // // import { SearchBar } from "@/components/SearchBar";
-// // // // import { db } from "@/firebase";
-// // // // import {
-// // // //   collection,
-// // // //   addDoc,
-// // // //   getDocs,
-// // // //   query,
-// // // //   where,
-// // // //   Timestamp,
-// // // //   doc,
-// // // //   updateDoc,
-// // // //   deleteDoc,
-// // // //   getDoc,
-// // // //   DocumentData,
-// // // //   QueryDocumentSnapshot,
-// // // //   orderBy,
-// // // //   limit,
-// // // // } from "firebase/firestore";
-// // // // import { useToast } from "@/hooks/use-toast"; // assumes you have this
-
-// // // // // ------------------ TYPES ------------------
-
-// // // // export interface Medicine {
-// // // //   id: string;
-// // // //   name: string;
-// // // //   costPrice: number;
-// // // //   retailPrice: number;
-// // // //   quantity: number;
-// // // //   createdAt?: Timestamp;
-// // // //   updatedAt?: Timestamp;
-// // // // }
-
-// // // // interface CartItem {
-// // // //   medicineId: string;
-// // // //   medicineName: string;
-// // // //   quantity: number;
-// // // //   price: number;
-// // // //   cost: number;
-// // // //   medicine: Medicine;
-// // // // }
-
-// // // // interface Sale {
-// // // //   id: string;
-// // // //   amount: number;
-// // // //   profit: number;
-// // // //   date: string;
-// // // //   timestamp: Timestamp;
-// // // //   medicineId: string;
-// // // //   medicineName: string;
-// // // //   quantity: number;
-// // // //   costPrice: number;
-// // // //   retailPrice: number;
-// // // // }
-
-// // // // interface PrescriptionDoc {
-// // // //   id: string;
-// // // //   patient?: { name?: string; referringDoctor?: string; [k: string]: any };
-// // // //   prescription?: Array<{
-// // // //     id?: string;
-// // // //     name?: string;
-// // // //     qty?: number;
-// // // //     retail_price?: number;
-// // // //     cost_price?: number;
-// // // //     dosage?: string;
-// // // //     instructions?: string;
-// // // //     [k: string]: any;
-// // // //   }>;
-// // // //   totalItems?: number;
-// // // //   totalRetail?: number;
-// // // //   timestamp?: string | any;
-// // // // }
-
-// // // // // ------------------ COMPONENT ------------------
-
-// // // // export default function Sales() {
-// // // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>(
-// // // //     []
-// // // //   );
-// // // //   const { toast } = useToast();
-
-// // // //   // Fetch today's sales
-// // // //   useEffect(() => {
-// // // //     const fetchSales = async () => {
-// // // //       try {
-// // // //         const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-// // // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // // //         const snapshot = await getDocs(q);
-
-// // // //         const salesData: Sale[] = snapshot.docs.map(
-// // // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // // //             const data = doc.data();
-
-// // // //             // Normalize timestamp
-// // // //             let timestamp: Timestamp;
-// // // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // // //               timestamp = data.timestamp;
-// // // //             } else if (data.timestamp) {
-// // // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // // //             } else {
-// // // //               timestamp = Timestamp.now();
-// // // //             }
-
-// // // //             return {
-// // // //               id: doc.id,
-// // // //               amount: Number(data.amount ?? 0),
-// // // //               profit: Number(data.profit ?? 0),
-// // // //               date: data.date ?? "",
-// // // //               timestamp,
-// // // //               medicineId: data.medicine_id,
-// // // //               medicineName: data.medicine_name,
-// // // //               quantity: Number(data.quantity ?? 0),
-// // // //               costPrice: Number(data.cost_price ?? 0),
-// // // //               retailPrice: Number(data.retail_price ?? 0),
-// // // //             };
-// // // //           }
-// // // //         );
-
-// // // //         setTodaysSales(salesData);
-// // // //       } catch (err) {
-// // // //         console.error("Error fetching today's sales:", err);
-// // // //       }
-// // // //     };
-// // // //     fetchSales();
-// // // //   }, []);
-
-// // // //   // Fetch recent prescriptions (latest 50) from collection 'prescriptions'
-// // // //   useEffect(() => {
-// // // //     const fetchPrescriptions = async () => {
-// // // //       try {
-// // // //         // latest first
-// // // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // // //         const snap = await getDocs(q);
-// // // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // // //           const data = d.data();
-// // // //           return {
-// // // //             id: d.id,
-// // // //             patient: data.patient,
-// // // //             prescription: data.prescription || data.prescribed || [],
-// // // //             totalItems: data.totalItems,
-// // // //             totalRetail: data.totalRetail,
-// // // //             timestamp: data.timestamp,
-// // // //           };
-// // // //         });
-// // // //         setPrescriptions(docs);
-// // // //       } catch (err) {
-// // // //         console.error("Error fetching prescriptions:", err);
-// // // //       }
-// // // //     };
-
-// // // //     fetchPrescriptions();
-// // // //   }, []);
-
-// // // //   // Add medicine to cart
-// // // //   const addToCart = (medicine: any, quantity: number = 1) => {
-// // // //     const normalizedMedicine: Medicine = {
-// // // //       id: medicine.id,
-// // // //       name: medicine.name,
-// // // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // // //       retailPrice: Number(
-// // // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // // //       ),
-// // // //       quantity: Number(medicine.quantity ?? 0),
-// // // //       createdAt: medicine.created_at,
-// // // //       updatedAt: medicine.updated_at,
-// // // //     };
-
-// // // //     const existingItem = cart.find(
-// // // //       (item) => item.medicineId === normalizedMedicine.id
-// // // //     );
-// // // //     if (existingItem) {
-// // // //       setCart(
-// // // //         cart.map((item) =>
-// // // //           item.medicineId === normalizedMedicine.id
-// // // //             ? { ...item, quantity: item.quantity + quantity }
-// // // //             : item
-// // // //         )
-// // // //       );
-// // // //     } else {
-// // // //       const newItem: CartItem = {
-// // // //         medicineId: normalizedMedicine.id,
-// // // //         medicineName: normalizedMedicine.name,
-// // // //         quantity,
-// // // //         price: normalizedMedicine.retailPrice,
-// // // //         cost: normalizedMedicine.costPrice,
-// // // //         medicine: normalizedMedicine,
-// // // //       };
-// // // //       setCart((prev) => [...prev, newItem]);
-// // // //     }
-// // // //   };
-
-// // // //   // Add multiple items (used by loading a prescription)
-// // // //   const addMultipleToCart = (items: {
-// // // //     id?: string;
-// // // //     name?: string;
-// // // //     qty?: number;
-// // // //     retail_price?: number;
-// // // //     cost_price?: number;
-// // // //   }[]) => {
-// // // //     for (const it of items) {
-// // // //       const medObj = {
-// // // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // // //         name: it.name || "Unnamed",
-// // // //         cost_price: it.cost_price ?? 0,
-// // // //         retail_price: it.retail_price ?? 0,
-// // // //         quantity: it.qty ?? 1,
-// // // //       };
-// // // //       addToCart(medObj, medObj.quantity);
-// // // //     }
-// // // //   };
-
-// // // //   // Update quantity in cart
-// // // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // // //     if (newQuantity <= 0) {
-// // // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // // //     } else {
-// // // //       setCart(
-// // // //         cart.map((item) =>
-// // // //           item.medicineId === medicineId
-// // // //             ? { ...item, quantity: newQuantity }
-// // // //             : item
-// // // //         )
-// // // //       );
-// // // //     }
-// // // //   };
-
-// // // //   // Totals
-// // // //   const getTotalAmount = () =>
-// // // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-// // // //   // profit rounded to two decimals when displayed
-// // // //   const getTotalProfit = () =>
-// // // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // // //   // ------------------ PROCESS SALE ------------------
-// // // //   const processSale = async () => {
-// // // //     if (cart.length === 0) return;
-
-// // // //     try {
-// // // //       for (const item of cart) {
-// // // //         const amount = item.price * item.quantity;
-// // // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // // //         const saleDoc = {
-// // // //           amount,
-// // // //           profit,
-// // // //           date: new Date().toISOString().split("T")[0],
-// // // //           timestamp: Timestamp.now(),
-// // // //           medicine_id: item.medicineId,
-// // // //           medicine_name: item.medicineName,
-// // // //           quantity: item.quantity,
-// // // //           cost_price: item.cost,
-// // // //           retail_price: item.price,
-// // // //         };
-
-// // // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // // //         // ✅ Update stock in main firebase's medicines collection (if exists)
-// // // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // // //         const medicineSnap = await getDoc(medicineRef);
-
-// // // //         if (medicineSnap.exists()) {
-// // // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // // //           await updateDoc(medicineRef, {
-// // // //             quantity: Math.max(0, currentQty - item.quantity), // prevent negative stock
-// // // //           });
-// // // //         }
-// // // //       }
-
-// // // //       setCart([]);
-
-// // // //       // ✅ Delete loaded prescription if any
-// // // // if (activePrescriptionId) {
-// // // //   try {
-// // // //     await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // // //     setPrescriptions((prev) =>
-// // // //       prev.filter((p) => p.id !== activePrescriptionId)
-// // // //     );
-// // // //     setActivePrescriptionId(null);
-// // // //   } catch (err) {
-// // // //     console.error("Failed to delete prescription:", err);
-// // // //   }
-// // // // }
-
-
-// // // //       toast({
-// // // //         title: "Sale processed",
-// // // //         description: "Sale saved and stock updated.",
-// // // //         variant: "default",
-// // // //       });
-
-// // // //       // refresh today's sales
-// // // //       const today = new Date().toISOString().split("T")[0];
-// // // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // // //       const snapshot = await getDocs(q);
-
-// // // //       const salesData: Sale[] = snapshot.docs.map(
-// // // //         (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // // //           const data = doc.data();
-// // // //           let timestamp: Timestamp;
-// // // //           if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // // //             timestamp = data.timestamp;
-// // // //           } else if (data.timestamp) {
-// // // //             timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // // //           } else {
-// // // //             timestamp = Timestamp.now();
-// // // //           }
-// // // //           return {
-// // // //             id: doc.id,
-// // // //             amount: Number(data.amount ?? 0),
-// // // //             profit: Number(data.profit ?? 0),
-// // // //             date: data.date ?? "",
-// // // //             timestamp,
-// // // //             medicineId: data.medicine_id,
-// // // //             medicineName: data.medicine_name,
-// // // //             quantity: Number(data.quantity ?? 0),
-// // // //             costPrice: Number(data.cost_price ?? 0),
-// // // //             retailPrice: Number(data.retail_price ?? 0),
-// // // //           };
-// // // //         }
-// // // //       );
-
-// // // //       setTodaysSales(salesData);
-// // // //     } catch (err) {
-// // // //       console.error("Error processing sale:", err);
-// // // //       toast({
-// // // //         title: "Error",
-// // // //         description: "Failed to process sale. Check console.",
-// // // //         variant: "destructive",
-// // // //       });
-// // // //     }
-// // // //   };
-
-// // // //   // ------------------ REVERSE SALE ------------------
-// // // //   const reverseSale = async (sale: Sale) => {
-// // // //     try {
-// // // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // // //       const medicineSnap = await getDoc(medicineRef);
-
-// // // //       if (!medicineSnap.exists()) {
-// // // //         console.error("Medicine not found:", sale.medicineId);
-// // // //         return;
-// // // //       }
-
-// // // //       const currentQty = medicineSnap.data().quantity ?? 0;
-
-// // // //       await updateDoc(medicineRef, {
-// // // //         quantity: currentQty + sale.quantity,
-// // // //       });
-
-// // // //       const saleRef = doc(db, "sales", sale.id);
-// // // //       await deleteDoc(saleRef);
-
-// // // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // // //       toast({
-// // // //         title: "Sale reversed",
-// // // //         description: "Sale removed and stock updated.",
-// // // //         variant: "default",
-// // // //       });
-// // // //     } catch (err) {
-// // // //       console.error("Error reversing sale:", err);
-// // // //       toast({
-// // // //         title: "Error",
-// // // //         description: "Failed to reverse sale.",
-// // // //         variant: "destructive",
-// // // //       });
-// // // //     }
-// // // //   };
-
-// // // //   // ------------------ CLEAR CART (Return Button) ------------------
-// // // //   const handleReturn = () => {
-// // // //     if (cart.length === 0) return;
-// // // //     const confirmClear = window.confirm(
-// // // //       "Are you sure you want to remove all medicines from the cart?"
-// // // //     );
-// // // //     if (confirmClear) setCart([]);
-// // // //   };
-
-// // // //   // ------------------ JSX ------------------
-
-// // // //   return (
-// // // //     <div className="p-6">
-// // // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // // //         {/* Left Side */}
-// // // //         <div className="space-y-6">
-// // // //           <h1 className="text-3xl font-bold text-foreground">
-// // // //             Sales Management
-// // // //           </h1>
-
-// // // //           {/* Medicine Search */}
-// // // //           <div className="medical-card p-4">
-// // // //             <h3 className="font-semibold text-foreground mb-3">
-// // // //               Add Medicine to Cart
-// // // //             </h3>
-// // // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // // //           </div>
-
-// // // //           {/* Shopping Cart */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b border-border flex items-center justify-between">
-// // // //               <h3 className="font-semibold text-foreground">Shopping Cart</h3>
-// // // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // // //             </div>
-// // // //             <div className="p-4">
-// // // //               {cart.length > 0 ? (
-// // // //                 <>
-// // // //                   {cart.map((item) => (
-// // // //                     <div
-// // // //                       key={item.medicineId}
-// // // //                       className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
-// // // //                     >
-// // // //                       <div className="flex-1">
-// // // //                         <h4 className="font-medium text-foreground">
-// // // //                           {item.medicineName}
-// // // //                         </h4>
-// // // //                         <p className="text-sm text-muted-foreground">
-// // // //                           PKR {item.price} each
-// // // //                         </p>
-// // // //                       </div>
-// // // //                       <div className="flex items-center space-x-2">
-// // // //                         <Button
-// // // //                           variant="outline"
-// // // //                           size="sm"
-// // // //                           onClick={() =>
-// // // //                             updateQuantity(item.medicineId, item.quantity - 1)
-// // // //                           }
-// // // //                         >
-// // // //                           <Minus className="w-3 h-3" />
-// // // //                         </Button>
-// // // //                         <span className="w-8 text-center font-medium">
-// // // //                           {item.quantity}
-// // // //                         </span>
-// // // //                         <Button
-// // // //                           variant="outline"
-// // // //                           size="sm"
-// // // //                           onClick={() =>
-// // // //                             updateQuantity(item.medicineId, item.quantity + 1)
-// // // //                           }
-// // // //                         >
-// // // //                           <Plus className="w-3 h-3" />
-// // // //                         </Button>
-// // // //                       </div>
-// // // //                       <div className="text-right ml-4">
-// // // //                         <p className="font-medium text-foreground">
-// // // //                           PKR {(item.price * item.quantity).toFixed(2)}
-// // // //                         </p>
-// // // //                       </div>
-// // // //                     </div>
-// // // //                   ))}
-
-// // // //                   <div className="border-t border-border pt-3 mt-4">
-// // // //                     <div className="flex justify-between items-center mb-2">
-// // // //                       <span className="text-muted-foreground">Subtotal:</span>
-// // // //                       <span className="font-medium text-foreground">
-// // // //                         PKR {getTotalAmount().toFixed(2)}
-// // // //                       </span>
-// // // //                     </div>
-// // // //                     <div className="flex justify-between items-center mb-4">
-// // // //                       <span className="text-muted-foreground">Profit:</span>
-// // // //                       <span className="font-medium text-success">
-// // // //                         PKR {getTotalProfit().toFixed(2)}
-// // // //                       </span>
-// // // //                     </div>
-// // // //                     <div className="flex space-x-3">
-// // // //                       <Button onClick={processSale} className="flex-1 gap-2">
-// // // //                         <Receipt className="w-4 h-4" /> Process Sale
-// // // //                       </Button>
-// // // //                       <Button
-// // // //                         variant="outline"
-// // // //                         className="gap-2"
-// // // //                         onClick={handleReturn}
-// // // //                       >
-// // // //                         <RotateCcw className="w-4 h-4" /> Return
-// // // //                       </Button>
-// // // //                     </div>
-// // // //                   </div>
-// // // //                 </>
-// // // //               ) : (
-// // // //                 <div className="text-center py-8">
-// // // //                   <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-// // // //                   <p className="text-muted-foreground">Your cart is empty</p>
-// // // //                 </div>
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-// // // //         </div>
-
-// // // //         {/* Right Side - Today's Sales, Prescriptions & Recent Sales */}
-// // // //         <div className="space-y-6">
-// // // //           <h2 className="text-2xl font-bold text-foreground">
-// // // //             Today's Sales Summary
-// // // //           </h2>
-
-// // // //           <div className="grid grid-cols-2 gap-4">
-// // // //             <div className="stats-card-primary p-4">
-// // // //               <p className="text-sm font-medium text-primary/70">Total Sales</p>
-// // // //               <h3 className="text-xl font-bold text-primary">
-// // // //                 PKR{" "}
-// // // //                 {todaysSales
-// // // //                   .reduce((sum, sale) => sum + (sale.amount ?? 0), 0)
-// // // //                   .toFixed(2)}
-// // // //               </h3>
-// // // //             </div>
-// // // //             <div className="stats-card-success p-4">
-// // // //               <p className="text-sm font-medium text-success/70">
-// // // //                 Total Profit
-// // // //               </p>
-// // // //               <h3 className="text-xl font-bold text-success">
-// // // //                 PKR{" "}
-// // // //                 {todaysSales
-// // // //                   .reduce((sum, sale) => sum + (sale.profit ?? 0), 0)
-// // // //                   .toFixed(2)}
-// // // //               </h3>
-// // // //             </div>
-// // // //           </div>
-
-// // // //           {/* Prescribed Section (A: below Today's Sales Summary) */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b border-border flex items-center justify-between">
-// // // //               <h3 className="font-semibold text-foreground">Prescriptions</h3>
-// // // //             </div>
-
-// // // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto pr-2">
-// // // //               {prescriptions.length === 0 ? (
-// // // //                 <p className="text-muted-foreground">No prescriptions found.</p>
-// // // //               ) : (
-// // // //                 prescriptions.map((pres) => (
-// // // //                   <div
-// // // //                     key={pres.id}
-// // // //                     className="p-3 bg-accent/20 rounded-lg flex items-center justify-between"
-// // // //                   >
-// // // //                     <div>
-// // // //                       <p className="font-medium text-foreground">
-// // // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // // //                       </p>
-// // // //                       <p className="text-sm text-muted-foreground">
-// // // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} •{" "}
-// // // //                         PKR {(pres.totalRetail ?? 0).toFixed(2)}
-// // // //                       </p>
-// // // //                     </div>
-
-// // // //                     <div className="flex items-center gap-2">
-// // // //                     <Button
-// // // //   size="sm"
-// // // //   onClick={() => {
-// // // //     if (!pres.prescription || pres.prescription.length === 0) {
-// // // //       toast({
-// // // //         title: "Empty prescription",
-// // // //         description: "This prescription has no medicines.",
-// // // //         variant: "destructive",
-// // // //       });
-// // // //       return;
-// // // //     }
-// // // //     addMultipleToCart(pres.prescription);
-// // // //     setActivePrescriptionId(pres.id); // ✅ remember which prescription was loaded
-// // // //     toast({
-// // // //       title: "Prescription loaded",
-// // // //       description: "All medicines added to cart.",
-// // // //       variant: "default",
-// // // //     });
-// // // //   }}
-// // // // >
-// // // //   Add to Cart
-// // // // </Button>
-
-// // // //                     </div>
-// // // //                   </div>
-// // // //                 ))
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-
-// // // //           {/* Recent Sales (scrollable area on the right) */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b border-border">
-// // // //               <h3 className="font-semibold text-foreground">Recent Sales</h3>
-// // // //             </div>
-
-// // // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto pr-2">
-// // // //               {todaysSales.length === 0 ? (
-// // // //                 <p className="text-muted-foreground">No sales yet today.</p>
-// // // //               ) : (
-// // // //                 todaysSales.map((sale) => (
-// // // //                   <div key={sale.id} className="p-3 bg-accent/20 rounded-lg">
-// // // //                     <div className="flex justify-between items-start mb-2">
-// // // //                       <div>
-// // // //                         <p className="font-medium text-foreground">
-// // // //                           {sale.medicineName}
-// // // //                         </p>
-// // // //                         <p className="text-sm text-muted-foreground">
-// // // //                           {sale.timestamp
-// // // //                             ? sale.timestamp.toDate().toLocaleTimeString()
-// // // //                             : ""}
-// // // //                         </p>
-// // // //                       </div>
-// // // //                       <div className="text-right">
-// // // //                         <p className="font-medium text-foreground">
-// // // //                           PKR {Number(sale.amount).toFixed(2)}
-// // // //                         </p>
-// // // //                         <p className="text-sm text-success">
-// // // //                           Profit: PKR {Number(sale.profit).toFixed(2)}
-// // // //                         </p>
-// // // //                       </div>
-// // // //                     </div>
-// // // //                     <div className="flex justify-between items-center">
-// // // //                       <span className="text-sm text-muted-foreground">
-// // // //                         Qty: {sale.quantity}
-// // // //                       </span>
-// // // //                       <Button
-// // // //                         variant="destructive"
-// // // //                         size="sm"
-// // // //                         onClick={() => reverseSale(sale)}
-// // // //                         className="gap-1"
-// // // //                       >
-// // // //                         <RotateCcw className="w-4 h-4" /> Reverse
-// // // //                       </Button>
-// // // //                     </div>
-// // // //                   </div>
-// // // //                 ))
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-// // // //         </div>
-// // // //       </div>
-// // // //     </div>
-// // // //   );
-// // // // }
-
-// // // "use client";
-
-// // // import { useState, useEffect } from "react";
-// // // import {
-// // //   ShoppingCart,
-// // //   Plus,
-// // //   Minus,
-// // //   Receipt,
-// // //   RotateCcw,
-// // //   FileDown, // for PDF button
-// // // } from "lucide-react";
-// // // import { Button } from "@/components/ui/button";
-// // // import { SearchBar } from "@/components/SearchBar";
-// // // import { db } from "@/firebase";
-// // // import {
-// // //   collection,
-// // //   addDoc,
-// // //   getDocs,
-// // //   query,
-// // //   where,
-// // //   Timestamp,
-// // //   doc,
-// // //   updateDoc,
-// // //   deleteDoc,
-// // //   getDoc,
-// // //   DocumentData,
-// // //   QueryDocumentSnapshot,
-// // //   orderBy,
-// // //   limit,
-// // // } from "firebase/firestore";
-// // // import { useToast } from "@/hooks/use-toast";
-// // // import generateSalePDF from "@/components/SalePDF"; // PDF generator component
-
-// // // // ------------------ TYPES ------------------
-
-// // // export interface Medicine {
-// // //   id: string;
-// // //   name: string;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // //   quantity: number;
-// // //   createdAt?: Timestamp;
-// // //   updatedAt?: Timestamp;
-// // // }
-
-// // // export interface CartItem {
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   price: number;
-// // //   cost: number;
-// // //   medicine: Medicine;
-// // // }
-
-// // // interface Sale {
-// // //   id: string;
-// // //   amount: number;
-// // //   profit: number;
-// // //   date: string;
-// // //   timestamp: Timestamp;
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // // }
-
-// // // interface PrescriptionDoc {
-// // //   id: string;
-// // //   patient?: { name?: string; referringDoctor?: string; [k: string]: any };
-// // //   prescription?: Array<{
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //     dosage?: string;
-// // //     instructions?: string;
-// // //     [k: string]: any;
-// // //   }>;
-// // //   totalItems?: number;
-// // //   totalRetail?: number;
-// // //   timestamp?: string | any;
-// // // }
-
-// // // // ------------------ COMPONENT ------------------
-
-// // // export default function Sales() {
-// // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-// // //   const { toast } = useToast();
-
-// // //   // Fetch today's sales
-// // //   useEffect(() => {
-// // //     const fetchSales = async () => {
-// // //       try {
-// // //         const today = new Date().toISOString().split("T")[0];
-// // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // //         const snapshot = await getDocs(q);
-
-// // //         const salesData: Sale[] = snapshot.docs.map(
-// // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // //             const data = doc.data();
-// // //             let timestamp: Timestamp;
-// // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // //               timestamp = data.timestamp;
-// // //             } else if (data.timestamp) {
-// // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // //             } else {
-// // //               timestamp = Timestamp.now();
-// // //             }
-// // //             return {
-// // //               id: doc.id,
-// // //               amount: Number(data.amount ?? 0),
-// // //               profit: Number(data.profit ?? 0),
-// // //               date: data.date ?? "",
-// // //               timestamp,
-// // //               medicineId: data.medicine_id,
-// // //               medicineName: data.medicine_name,
-// // //               quantity: Number(data.quantity ?? 0),
-// // //               costPrice: Number(data.cost_price ?? 0),
-// // //               retailPrice: Number(data.retail_price ?? 0),
-// // //             };
-// // //           }
-// // //         );
-// // //         setTodaysSales(salesData);
-// // //       } catch (err) {
-// // //         console.error("Error fetching today's sales:", err);
-// // //       }
-// // //     };
-// // //     fetchSales();
-// // //   }, []);
-
-// // //   // Fetch prescriptions (latest 50)
-// // //   useEffect(() => {
-// // //     const fetchPrescriptions = async () => {
-// // //       try {
-// // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // //         const snap = await getDocs(q);
-// // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // //           const data = d.data();
-// // //           return {
-// // //             id: d.id,
-// // //             patient: data.patient,
-// // //             prescription: data.prescription || data.prescribed || [],
-// // //             totalItems: data.totalItems,
-// // //             totalRetail: data.totalRetail,
-// // //             timestamp: data.timestamp,
-// // //           };
-// // //         });
-// // //         setPrescriptions(docs);
-// // //       } catch (err) {
-// // //         console.error("Error fetching prescriptions:", err);
-// // //       }
-// // //     };
-// // //     fetchPrescriptions();
-// // //   }, []);
-
-// // //   // Add single medicine
-// // //   const addToCart = (medicine: any, quantity: number = 1) => {
-// // //     const normalizedMedicine: Medicine = {
-// // //       id: medicine.id,
-// // //       name: medicine.name,
-// // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // //       retailPrice: Number(
-// // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // //       ),
-// // //       quantity: Number(medicine.quantity ?? 0),
-// // //       createdAt: medicine.created_at,
-// // //       updatedAt: medicine.updated_at,
-// // //     };
-
-// // //     const existingItem = cart.find(
-// // //       (item) => item.medicineId === normalizedMedicine.id
-// // //     );
-// // //     if (existingItem) {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === normalizedMedicine.id
-// // //             ? { ...item, quantity: item.quantity + quantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     } else {
-// // //       const newItem: CartItem = {
-// // //         medicineId: normalizedMedicine.id,
-// // //         medicineName: normalizedMedicine.name,
-// // //         quantity,
-// // //         price: normalizedMedicine.retailPrice,
-// // //         cost: normalizedMedicine.costPrice,
-// // //         medicine: normalizedMedicine,
-// // //       };
-// // //       setCart((prev) => [...prev, newItem]);
-// // //     }
-// // //   };
-
-// // //   // Add all medicines from a prescription
-// // //   const addMultipleToCart = (items: {
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //   }[]) => {
-// // //     for (const it of items) {
-// // //       const medObj = {
-// // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // //         name: it.name || "Unnamed",
-// // //         cost_price: it.cost_price ?? 0,
-// // //         retail_price: it.retail_price ?? 0,
-// // //         quantity: it.qty ?? 1,
-// // //       };
-// // //       addToCart(medObj, medObj.quantity);
-// // //     }
-// // //   };
-
-// // //   // Update quantity
-// // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // //     if (newQuantity <= 0) {
-// // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // //     } else {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === medicineId
-// // //             ? { ...item, quantity: newQuantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     }
-// // //   };
-
-// // //   // Totals
-// // //   const getTotalAmount = () =>
-// // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-// // //   const getTotalProfit = () =>
-// // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // //   // ------------------ PROCESS SALE ------------------
-// // //   const processSale = async () => {
-// // //     if (cart.length === 0) return;
-
-// // //     try {
-// // //       for (const item of cart) {
-// // //         const amount = item.price * item.quantity;
-// // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // //         const saleDoc = {
-// // //           amount,
-// // //           profit,
-// // //           date: new Date().toISOString().split("T")[0],
-// // //           timestamp: Timestamp.now(),
-// // //           medicine_id: item.medicineId,
-// // //           medicine_name: item.medicineName,
-// // //           quantity: item.quantity,
-// // //           cost_price: item.cost,
-// // //           retail_price: item.price,
-// // //         };
-
-// // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // //         const medicineSnap = await getDoc(medicineRef);
-// // //         if (medicineSnap.exists()) {
-// // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // //           await updateDoc(medicineRef, {
-// // //             quantity: Math.max(0, currentQty - item.quantity),
-// // //           });
-// // //         }
-// // //       }
-
-// // //       setCart([]);
-
-// // //       if (activePrescriptionId) {
-// // //         try {
-// // //           await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // //           setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-// // //           setActivePrescriptionId(null);
-// // //         } catch (err) {
-// // //           console.error("Failed to delete prescription:", err);
-// // //         }
-// // //       }
-
-// // //       toast({
-// // //         title: "Sale processed",
-// // //         description: "Sale saved and stock updated.",
-// // //         variant: "default",
-// // //       });
-
-// // //       const today = new Date().toISOString().split("T")[0];
-// // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // //       const snapshot = await getDocs(q);
-// // //       const salesData: Sale[] = snapshot.docs.map((doc) => {
-// // //         const data = doc.data();
-// // //         return {
-// // //           id: doc.id,
-// // //           amount: Number(data.amount ?? 0),
-// // //           profit: Number(data.profit ?? 0),
-// // //           date: data.date ?? "",
-// // //           timestamp: data.timestamp,
-// // //           medicineId: data.medicine_id,
-// // //           medicineName: data.medicine_name,
-// // //           quantity: Number(data.quantity ?? 0),
-// // //           costPrice: Number(data.cost_price ?? 0),
-// // //           retailPrice: Number(data.retail_price ?? 0),
-// // //         };
-// // //       });
-// // //       setTodaysSales(salesData);
-// // //     } catch (err) {
-// // //       console.error("Error processing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to process sale. Check console.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Process sale & print PDF
-// // //   const handleProcessSaleWithPDF = async () => {
-// // //     await processSale();
-// // //     generateSalePDF(cart);
-// // //   };
-
-// // //   // Reverse sale
-// // //   const reverseSale = async (sale: Sale) => {
-// // //     try {
-// // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // //       const medicineSnap = await getDoc(medicineRef);
-
-// // //       if (!medicineSnap.exists()) return;
-
-// // //       const currentQty = medicineSnap.data().quantity ?? 0;
-// // //       await updateDoc(medicineRef, {
-// // //         quantity: currentQty + sale.quantity,
-// // //       });
-
-// // //       await deleteDoc(doc(db, "sales", sale.id));
-// // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // //       toast({
-// // //         title: "Sale reversed",
-// // //         description: "Sale removed and stock updated.",
-// // //         variant: "default",
-// // //       });
-// // //     } catch (err) {
-// // //       console.error("Error reversing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to reverse sale.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Clear cart
-// // //   const handleReturn = () => {
-// // //     if (cart.length === 0) return;
-// // //     const confirmClear = window.confirm("Remove all medicines from cart?");
-// // //     if (confirmClear) setCart([]);
-// // //   };
-
-// // //   // ------------------ JSX ------------------
-
-// // //   return (
-// // //     <div className="p-6">
-// // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // //         {/* Left Side */}
-// // //         <div className="space-y-6">
-// // //           <h1 className="text-3xl font-bold text-foreground">Sales Management</h1>
-
-// // //           {/* Medicine Search */}
-// // //           <div className="medical-card p-4">
-// // //             <h3 className="font-semibold mb-3">Add Medicine to Cart</h3>
-// // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // //           </div>
-
-// // //           {/* Shopping Cart */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Shopping Cart</h3>
-// // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // //             </div>
-
-// // //             <div className="p-4">
-// // //               {cart.length > 0 ? (
-// // //                 <>
-// // //                   {cart.map((item) => (
-// // //                     <div
-//                       key={item.medicineId}
-//                       className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-accent/30 rounded-lg gap-3"
-//                     >
-//                       <div className="flex-1">
-//                         <h4 className="font-medium text-foreground text-sm sm:text-base">
-//                           {item.medicineName}
-//                         </h4>
-//                         <p className="text-xs sm:text-sm text-muted-foreground">
-//                           PKR {item.price} each
-//                         </p>
-//                       </div>
-//                       <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
-//                         <div className="flex items-center space-x-2">
-//                           <Button
-//                             variant="outline"
-//                             size="sm"
-//                             className="h-8 w-8 p-0"
-//                             onClick={() =>
-//                               updateQuantity(item.medicineId, item.quantity - 1)
-//                             }
-//                           >
-//                             <Minus className="w-3 h-3" />
-//                           </Button>
-//                           <span className="w-8 text-center font-medium text-sm">
-//                             {item.quantity}
-//                           </span>
-//                           <Button
-//                             variant="outline"
-//                             size="sm"
-//                             className="h-8 w-8 p-0"
-//                             onClick={() =>
-//                               updateQuantity(item.medicineId, item.quantity + 1)
-//                             }
-//                           >
-//                             <Plus className="w-3 h-3" />
-//                           </Button>
-//                         </div>
-//                         <div className="text-right min-w-[80px]">
-//                           <p className="font-medium text-foreground text-sm sm:text-base">
-//                             PKR {(item.price * item.quantity).toFixed(2)}
-//                           </p>
-//                         </div>
-//                       </div>
-//                     </div>
-// // //                   ))}
-
-// // //                   <div className="border-t pt-3 mt-4">
-// // //                     <div className="flex justify-between mb-2">
-// // //                       <span>Subtotal:</span>
-// // //                       <span>PKR {getTotalAmount().toFixed(2)}</span>
-// // //                     </div>
-// // //                     <div className="flex justify-between mb-4">
-// // //                       <span>Profit:</span>
-// // //                       <span className="text-success">
-// // //                         PKR {getTotalProfit().toFixed(2)}
-// // //                       </span>
-// // //                     </div>
-
-// // //                     {/* Conditional buttons */}
-// // //                     {activePrescriptionId ? (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button
-// // //                           onClick={handleProcessSaleWithPDF}
-// // //                           className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
-// // //                         >
-// // //                           <FileDown className="w-4 h-4" /> Process & Print PDF
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     ) : (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     )}
-// // //                   </div>
-// // //                 </>
-// // //               ) : (
-// // //                 <div className="text-center py-8">
-// // //                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-// // //                   <p>Your cart is empty</p>
-// // //                 </div>
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-
-// // //         {/* Right Side */}
-// // //         <div className="space-y-6">
-// // //           <h2 className="text-2xl font-bold">Today's Sales Summary</h2>
-
-// // //           <div className="grid grid-cols-2 gap-4">
-// // //             <div className="stats-card-primary p-4">
-// // //               <p>Total Sales</p>
-// // //               <h3 className="text-xl font-bold">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.amount ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //             <div className="stats-card-success p-4">
-// // //               <p>Total Profit</p>
-// // //               <h3 className="text-xl font-bold text-success">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.profit ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Prescriptions */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Prescriptions</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-// // //               {prescriptions.length === 0 ? (
-// // //                 <p>No prescriptions found.</p>
-// // //               ) : (
-// // //                 prescriptions.map((pres) => (
-// // //                   <div
-// // //                     key={pres.id}
-// // //                     className="p-3 bg-accent/20 rounded-lg flex justify-between"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">
-// // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // //                       </p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} • PKR{" "}
-// // //                         {(pres.totalRetail ?? 0).toFixed(2)}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       onClick={() => {
-// // //                         if (!pres.prescription || pres.prescription.length === 0) {
-// // //                           toast({
-// // //                             title: "Empty prescription",
-// // //                             description: "This prescription has no medicines.",
-// // //                             variant: "destructive",
-// // //                           });
-// // //                           return;
-// // //                         }
-// // //                         addMultipleToCart(pres.prescription);
-// // //                         setActivePrescriptionId(pres.id);
-// // //                         toast({
-// // //                           title: "Prescription loaded",
-// // //                           description: "All medicines added to cart.",
-// // //                         });
-// // //                       }}
-// // //                     >
-// // //                       Add to Cart
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Recent Sales */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b">
-// // //               <h3 className="font-semibold">Recent Sales</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-// // //               {todaysSales.length === 0 ? (
-// // //                 <p>No sales yet today.</p>
-// // //               ) : (
-// // //                 todaysSales.map((s) => (
-// // //                   <div
-// // //                     key={s.id}
-// // //                     className="flex justify-between items-center p-2 bg-accent/30 rounded-lg"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">{s.medicineName}</p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         {s.quantity} × PKR {s.retailPrice} = PKR {s.amount}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       variant="destructive"
-// // //                       onClick={() => reverseSale(s)}
-// // //                     >
-// // //                       Reverse
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // }
-
-// // // "use client";
-
-// // // import { useState, useEffect } from "react";
-// // // import {
-// // //   ShoppingCart,
-// // //   Plus,
-// // //   Minus,
-// // //   Receipt,
-// // //   RotateCcw,
-// // //   FileDown,
-// // // } from "lucide-react";
-// // // import { Button } from "@/components/ui/button";
-// // // import { SearchBar } from "@/components/SearchBar";
-// // // import { db } from "@/firebase";
-// // // import {
-// // //   collection,
-// // //   addDoc,
-// // //   getDocs,
-// // //   query,
-// // //   where,
-// // //   Timestamp,
-// // //   doc,
-// // //   updateDoc,
-// // //   deleteDoc,
-// // //   getDoc,
-// // //   DocumentData,
-// // //   QueryDocumentSnapshot,
-// // //   orderBy,
-// // //   limit,
-// // // } from "firebase/firestore";
-// // // import { useToast } from "@/hooks/use-toast";
-// // // import generateSalePDF from "@/components/SalePDF";
-
-// // // // ------------------ TYPES ------------------
-
-// // // export interface Medicine {
-// // //   id: string;
-// // //   name: string;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // //   quantity: number;
-// // //   createdAt?: Timestamp;
-// // //   updatedAt?: Timestamp;
-// // // }
-
-// // // export interface CartItem {
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   price: number;
-// // //   cost: number;
-// // //   medicine: Medicine;
-// // //   dosage?: string;
-// // //   instructions?: string;
-// // // }
-
-// // // interface Sale {
-// // //   id: string;
-// // //   amount: number;
-// // //   profit: number;
-// // //   date: string;
-// // //   timestamp: Timestamp;
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // // }
-
-// // // interface PatientData {
-// // //   name?: string;
-// // //   referringDoctor?: string;
-// // //   age?: string;
-// // //   gender?: string;
-// // //   phone?: string;
-// // //   [k: string]: any;
-// // // }
-
-// // // interface PrescriptionDoc {
-// // //   id: string;
-// // //   patient?: PatientData;
-// // //   prescription?: Array<{
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //     dosage?: string;
-// // //     instructions?: string;
-// // //     [k: string]: any;
-// // //   }>;
-// // //   totalItems?: number;
-// // //   totalRetail?: number;
-// // //   timestamp?: string | any;
-// // // }
-
-// // // // ------------------ COMPONENT ------------------
-
-// // // export default function Sales() {
-// // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // //   const [activePatient, setActivePatient] = useState<PatientData | null>(null);
-// // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-// // //   const { toast } = useToast();
-
-// // //   // Fetch today's sales
-// // //   useEffect(() => {
-// // //     const fetchSales = async () => {
-// // //       try {
-// // //         const today = new Date().toISOString().split("T")[0];
-// // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // //         const snapshot = await getDocs(q);
-
-// // //         const salesData: Sale[] = snapshot.docs.map(
-// // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // //             const data = doc.data();
-// // //             let timestamp: Timestamp;
-// // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // //               timestamp = data.timestamp;
-// // //             } else if (data.timestamp) {
-// // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // //             } else {
-// // //               timestamp = Timestamp.now();
-// // //             }
-// // //             return {
-// // //               id: doc.id,
-// // //               amount: Number(data.amount ?? 0),
-// // //               profit: Number(data.profit ?? 0),
-// // //               date: data.date ?? "",
-// // //               timestamp,
-// // //               medicineId: data.medicine_id,
-// // //               medicineName: data.medicine_name,
-// // //               quantity: Number(data.quantity ?? 0),
-// // //               costPrice: Number(data.cost_price ?? 0),
-// // //               retailPrice: Number(data.retail_price ?? 0),
-// // //             };
-// // //           }
-// // //         );
-// // //         setTodaysSales(salesData);
-// // //       } catch (err) {
-// // //         console.error("Error fetching today's sales:", err);
-// // //       }
-// // //     };
-// // //     fetchSales();
-// // //   }, []);
-
-// // //   // Fetch prescriptions (latest 50)
-// // //   useEffect(() => {
-// // //     const fetchPrescriptions = async () => {
-// // //       try {
-// // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // //         const snap = await getDocs(q);
-// // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // //           const data = d.data();
-// // //           return {
-// // //             id: d.id,
-// // //             patient: data.patient,
-// // //             prescription: data.prescription || data.prescribed || [],
-// // //             totalItems: data.totalItems,
-// // //             totalRetail: data.totalRetail,
-// // //             timestamp: data.timestamp,
-// // //           };
-// // //         });
-// // //         setPrescriptions(docs);
-// // //       } catch (err) {
-// // //         console.error("Error fetching prescriptions:", err);
-// // //       }
-// // //     };
-// // //     fetchPrescriptions();
-// // //   }, []);
-
-// // //   // Add single medicine
-// // //   const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
-// // //     const normalizedMedicine: Medicine = {
-// // //       id: medicine.id,
-// // //       name: medicine.name,
-// // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // //       retailPrice: Number(
-// // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // //       ),
-// // //       quantity: Number(medicine.quantity ?? 0),
-// // //       createdAt: medicine.created_at,
-// // //       updatedAt: medicine.updated_at,
-// // //     };
-
-// // //     const existingItem = cart.find(
-// // //       (item) => item.medicineId === normalizedMedicine.id
-// // //     );
-// // //     if (existingItem) {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === normalizedMedicine.id
-// // //             ? { ...item, quantity: item.quantity + quantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     } else {
-// // //       const newItem: CartItem = {
-// // //         medicineId: normalizedMedicine.id,
-// // //         medicineName: normalizedMedicine.name,
-// // //         quantity,
-// // //         price: normalizedMedicine.retailPrice,
-// // //         cost: normalizedMedicine.costPrice,
-// // //         medicine: normalizedMedicine,
-// // //         dosage: dosage || undefined,
-// // //         instructions: instructions || undefined,
-// // //       };
-// // //       setCart((prev) => [...prev, newItem]);
-// // //     }
-// // //   };
-
-// // //   // Add all medicines from a prescription
-// // //   const addMultipleToCart = (items: {
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //     dosage?: string;
-// // //     instructions?: string;
-// // //   }[]) => {
-// // //     for (const it of items) {
-// // //       const medObj = {
-// // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // //         name: it.name || "Unnamed",
-// // //         cost_price: it.cost_price ?? 0,
-// // //         retail_price: it.retail_price ?? 0,
-// // //         quantity: it.qty ?? 1,
-// // //       };
-// // //       addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
-// // //     }
-// // //   };
-
-// // //   // Update quantity
-// // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // //     if (newQuantity <= 0) {
-// // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // //     } else {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === medicineId
-// // //             ? { ...item, quantity: newQuantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     }
-// // //   };
-
-// // //   // Totals
-// // //   const getTotalAmount = () =>
-// // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-// // //   const getTotalProfit = () =>
-// // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // //   // ------------------ PROCESS SALE ------------------
-// // //   const processSale = async () => {
-// // //     if (cart.length === 0) return;
-
-// // //     try {
-// // //       for (const item of cart) {
-// // //         const amount = item.price * item.quantity;
-// // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // //         const saleDoc = {
-// // //           amount,
-// // //           profit,
-// // //           date: new Date().toISOString().split("T")[0],
-// // //           timestamp: Timestamp.now(),
-// // //           medicine_id: item.medicineId,
-// // //           medicine_name: item.medicineName,
-// // //           quantity: item.quantity,
-// // //           cost_price: item.cost,
-// // //           retail_price: item.price,
-// // //         };
-
-// // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // //         const medicineSnap = await getDoc(medicineRef);
-// // //         if (medicineSnap.exists()) {
-// // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // //           await updateDoc(medicineRef, {
-// // //             quantity: Math.max(0, currentQty - item.quantity),
-// // //           });
-// // //         }
-// // //       }
-
-// // //       setCart([]);
-// // //       setActivePatient(null);
-
-// // //       if (activePrescriptionId) {
-// // //         try {
-// // //           await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // //           setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-// // //           setActivePrescriptionId(null);
-// // //         } catch (err) {
-// // //           console.error("Failed to delete prescription:", err);
-// // //         }
-// // //       }
-
-// // //       toast({
-// // //         title: "Sale processed",
-// // //         description: "Sale saved and stock updated.",
-// // //         variant: "default",
-// // //       });
-
-// // //       const today = new Date().toISOString().split("T")[0];
-// // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // //       const snapshot = await getDocs(q);
-// // //       const salesData: Sale[] = snapshot.docs.map((doc) => {
-// // //         const data = doc.data();
-// // //         return {
-// // //           id: doc.id,
-// // //           amount: Number(data.amount ?? 0),
-// // //           profit: Number(data.profit ?? 0),
-// // //           date: data.date ?? "",
-// // //           timestamp: data.timestamp,
-// // //           medicineId: data.medicine_id,
-// // //           medicineName: data.medicine_name,
-// // //           quantity: Number(data.quantity ?? 0),
-// // //           costPrice: Number(data.cost_price ?? 0),
-// // //           retailPrice: Number(data.retail_price ?? 0),
-// // //         };
-// // //       });
-// // //       setTodaysSales(salesData);
-// // //     } catch (err) {
-// // //       console.error("Error processing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to process sale. Check console.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Process sale & print PDF
-// // //   const handleProcessSaleWithPDF = async () => {
-// // //     if (cart.length === 0) return;
-
-// // //     try {
-// // //       // IMPORTANT: Generate PDF FIRST (before cart is cleared)
-// // //       console.log("Generating PDF with cart items:", cart.length);
-// // //       console.log("Patient data:", activePatient);
-
-// // //       await generateSalePDF({
-// // //         cart: cart,
-// // //         patient: activePatient || undefined,
-// // //       });
-
-// // //       console.log("PDF generation completed");
-
-// // //       // Small delay to ensure PDF download starts
-// // //       await new Promise(resolve => setTimeout(resolve, 500));
-
-// // //       // Then process the sale (this clears the cart)
-// // //       await processSale();
-
-// // //       toast({
-// // //         title: "PDF Generated",
-// // //         description: "Receipt PDF has been downloaded successfully.",
-// // //         variant: "default",
-// // //       });
-// // //     } catch (error) {
-// // //       console.error("Error in PDF generation:", error);
-// // //       toast({
-// // //         title: "PDF Error",
-// // //         description: "Failed to generate PDF. Check console for details.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Reverse sale
-// // //   const reverseSale = async (sale: Sale) => {
-// // //     try {
-// // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // //       const medicineSnap = await getDoc(medicineRef);
-
-// // //       if (!medicineSnap.exists()) return;
-
-// // //       const currentQty = medicineSnap.data().quantity ?? 0;
-// // //       await updateDoc(medicineRef, {
-// // //         quantity: currentQty + sale.quantity,
-// // //       });
-
-// // //       await deleteDoc(doc(db, "sales", sale.id));
-// // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // //       toast({
-// // //         title: "Sale reversed",
-// // //         description: "Sale removed and stock updated.",
-// // //         variant: "default",
-// // //       });
-// // //     } catch (err) {
-// // //       console.error("Error reversing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to reverse sale.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Clear cart
-// // //   const handleReturn = () => {
-// // //     if (cart.length === 0) return;
-// // //     const confirmClear = window.confirm("Remove all medicines from cart?");
-// // //     if (confirmClear) {
-// // //       setCart([]);
-// // //       setActivePrescriptionId(null);
-// // //       setActivePatient(null);
-// // //     }
-// // //   };
-
-// // //   // ------------------ JSX ------------------
-
-// // //   return (
-// // //     <div className="p-6">
-// // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // //         {/* Left Side */}
-// // //         <div className="space-y-6">
-// // //           <h1 className="text-3xl font-bold text-foreground">Sales Management</h1>
-
-// // //           {/* Active Patient Info */}
-// // //           {activePatient && (
-// // //             <div className="medical-card p-4 bg-blue-50 dark:bg-blue-950">
-// // //               <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">Active Prescription</h3>
-// // //               <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
-// // //               <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
-// // //               {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
-// // //               {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
-// // //             </div>
-// // //           )}
-
-// // //           {/* Medicine Search */}
-// // //           <div className="medical-card p-4">
-// // //             <h3 className="font-semibold mb-3">Add Medicine to Cart</h3>
-// // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // //           </div>
-
-// // //           {/* Shopping Cart */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Shopping Cart</h3>
-// // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // //             </div>
-
-// // //             <div className="p-4">
-// // //               {cart.length > 0 ? (
-// // //                 <>
-// // //                   {cart.map((item) => (
-// // //                     <div
-// // //                       key={item.medicineId}
-// // //                       className="flex flex-col p-3 bg-accent/30 rounded-lg mb-3"
-// // //                     >
-// // //                       <div className="flex items-center justify-between">
-// // //                         <div className="flex-1">
-// // //                           <h4 className="font-medium">{item.medicineName}</h4>
-// // //                           <p className="text-sm text-muted-foreground">
-// // //                             PKR {item.price} each
-// // //                           </p>
-// // //                           {item.dosage && (
-// // //                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-// // //                               <strong>Dosage:</strong> {item.dosage}
-// // //                             </p>
-// // //                           )}
-// // //                           {item.instructions && (
-// // //                             <p className="text-xs text-green-600 dark:text-green-400">
-// // //                               <strong>Instructions:</strong> {item.instructions}
-// // //                             </p>
-// // //                           )}
-// // //                         </div>
-// // //                         <div className="flex items-center space-x-2">
-// // //                           <Button
-// // //                             variant="outline"
-// // //                             size="sm"
-// // //                             onClick={() =>
-// // //                               updateQuantity(item.medicineId, item.quantity - 1)
-// // //                             }
-// // //                           >
-// // //                             <Minus className="w-3 h-3" />
-// // //                           </Button>
-// // //                           <span className="w-8 text-center">{item.quantity}</span>
-// // //                           <Button
-// // //                             variant="outline"
-// // //                             size="sm"
-// // //                             onClick={() =>
-// // //                               updateQuantity(item.medicineId, item.quantity + 1)
-// // //                             }
-// // //                           >
-// // //                             <Plus className="w-3 h-3" />
-// // //                           </Button>
-// // //                         </div>
-// // //                         <div className="text-right ml-4">
-// // //                           <p className="font-medium">
-// // //                             PKR {(item.price * item.quantity).toFixed(2)}
-// // //                           </p>
-// // //                         </div>
-// // //                       </div>
-// // //                     </div>
-// // //                   ))}
-
-// // //                   <div className="border-t pt-3 mt-4">
-// // //                     <div className="flex justify-between mb-2">
-// // //                       <span>Subtotal:</span>
-// // //                       <span>PKR {getTotalAmount().toFixed(2)}</span>
-// // //                     </div>
-// // //                     <div className="flex justify-between mb-4">
-// // //                       <span>Profit:</span>
-// // //                       <span className="text-success">
-// // //                         PKR {getTotalProfit().toFixed(2)}
-// // //                       </span>
-// // //                     </div>
-
-// // //                     {/* Conditional buttons */}
-// // //                     {activePrescriptionId ? (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button
-// // //                           onClick={handleProcessSaleWithPDF}
-// // //                           className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
-// // //                         >
-// // //                           <FileDown className="w-4 h-4" /> Process & Print PDF
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     ) : (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     )}
-// // //                   </div>
-// // //                 </>
-// // //               ) : (
-// // //                 <div className="text-center py-8">
-// // //                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-// // //                   <p>Your cart is empty</p>
-// // //                 </div>
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-
-// // //         {/* Right Side */}
-// // //         <div className="space-y-6">
-// // //           <h2 className="text-2xl font-bold">Today's Sales Summary</h2>
-
-// // //           <div className="grid grid-cols-2 gap-4">
-// // //             <div className="stats-card-primary p-4">
-// // //               <p>Total Sales</p>
-// // //               <h3 className="text-xl font-bold">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.amount ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //             <div className="stats-card-success p-4">
-// // //               <p>Total Profit</p>
-// // //               <h3 className="text-xl font-bold text-success">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.profit ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Prescriptions */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Prescriptions</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-// // //               {prescriptions.length === 0 ? (
-// // //                 <p>No prescriptions found.</p>
-// // //               ) : (
-// // //                 prescriptions.map((pres) => (
-// // //                   <div
-// // //                     key={pres.id}
-// // //                     className="p-3 bg-accent/20 rounded-lg flex justify-between"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">
-// // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // //                       </p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} • PKR{" "}
-// // //                         {(pres.totalRetail ?? 0).toFixed(2)}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       onClick={() => {
-// // //                         if (!pres.prescription || pres.prescription.length === 0) {
-// // //                           toast({
-// // //                             title: "Empty prescription",
-// // //                             description: "This prescription has no medicines.",
-// // //                             variant: "destructive",
-// // //                           });
-// // //                           return;
-// // //                         }
-// // //                         addMultipleToCart(pres.prescription);
-// // //                         setActivePrescriptionId(pres.id);
-// // //                         setActivePatient(pres.patient || null);
-// // //                         toast({
-// // //                           title: "Prescription loaded",
-// // //                           description: "All medicines added to cart.",
-// // //                         });
-// // //                       }}
-// // //                     >
-// // //                       Add to Cart
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Recent Sales */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b">
-// // //               <h3 className="font-semibold">Recent Sales</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-// // //               {todaysSales.length === 0 ? (
-// // //                 <p>No sales yet today.</p>
-// // //               ) : (
-// // //                 todaysSales.map((s) => (
-// // //                   <div
-// // //                     key={s.id}
-// // //                     className="flex justify-between items-center p-2 bg-accent/30 rounded-lg"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">{s.medicineName}</p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         {s.quantity} × PKR {s.retailPrice} = PKR {s.amount}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       variant="destructive"
-// // //                       onClick={() => reverseSale(s)}
-// // //                     >
-// // //                       Reverse
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // }
-
-
-
-// // // // // // Sales.tsx
-// // // // // "use client";
-
-// // // // // import { useState, useEffect } from "react";
-// // // // // import {
-// // // // //   ShoppingCart,
-// // // // //   Plus,
-// // // // //   Minus,
-// // // // //   Receipt,
-// // // // //   RotateCcw,
-// // // // // } from "lucide-react";
-// // // // // import { Button } from "@/components/ui/button";
-// // // // // import { SearchBar } from "@/components/SearchBar";
-// // // // // import { db } from "@/firebase";
-// // // // // import {
-// // // // //   collection,
-// // // // //   addDoc,
-// // // // //   getDocs,
-// // // // //   query,
-// // // // //   where,
-// // // // //   Timestamp,
-// // // // //   doc,
-// // // // //   updateDoc,
-// // // // //   deleteDoc,
-// // // // //   getDoc,
-// // // // //   DocumentData,
-// // // // //   QueryDocumentSnapshot,
-// // // // //   orderBy,
-// // // // //   limit,
-// // // // // } from "firebase/firestore";
-// // // // // import { useToast } from "@/hooks/use-toast"; // assumes you have this
-
-// // // // // // ------------------ TYPES ------------------
-
-// // // // // export interface Medicine {
-// // // // //   id: string;
-// // // // //   name: string;
-// // // // //   costPrice: number;
-// // // // //   retailPrice: number;
-// // // // //   quantity: number;
-// // // // //   createdAt?: Timestamp;
-// // // // //   updatedAt?: Timestamp;
-// // // // // }
-
-// // // // // interface CartItem {
-// // // // //   medicineId: string;
-// // // // //   medicineName: string;
-// // // // //   quantity: number;
-// // // // //   price: number;
-// // // // //   cost: number;
-// // // // //   medicine: Medicine;
-// // // // // }
-
-// // // // // interface Sale {
-// // // // //   id: string;
-// // // // //   amount: number;
-// // // // //   profit: number;
-// // // // //   date: string;
-// // // // //   timestamp: Timestamp;
-// // // // //   medicineId: string;
-// // // // //   medicineName: string;
-// // // // //   quantity: number;
-// // // // //   costPrice: number;
-// // // // //   retailPrice: number;
-// // // // // }
-
-// // // // // interface PrescriptionDoc {
-// // // // //   id: string;
-// // // // //   patient?: { name?: string; referringDoctor?: string; [k: string]: any };
-// // // // //   prescription?: Array<{
-// // // // //     id?: string;
-// // // // //     name?: string;
-// // // // //     qty?: number;
-// // // // //     retail_price?: number;
-// // // // //     cost_price?: number;
-// // // // //     dosage?: string;
-// // // // //     instructions?: string;
-// // // // //     [k: string]: any;
-// // // // //   }>;
-// // // // //   totalItems?: number;
-// // // // //   totalRetail?: number;
-// // // // //   timestamp?: string | any;
-// // // // // }
-
-// // // // // // ------------------ COMPONENT ------------------
-
-// // // // // export default function Sales() {
-// // // // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // // // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // // // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // // // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>(
-// // // // //     []
-// // // // //   );
-// // // // //   const { toast } = useToast();
-
-// // // // //   // Fetch today's sales
-// // // // //   useEffect(() => {
-// // // // //     const fetchSales = async () => {
-// // // // //       try {
-// // // // //         const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-// // // // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // // // //         const snapshot = await getDocs(q);
-
-// // // // //         const salesData: Sale[] = snapshot.docs.map(
-// // // // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // // // //             const data = doc.data();
-
-// // // // //             // Normalize timestamp
-// // // // //             let timestamp: Timestamp;
-// // // // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // // // //               timestamp = data.timestamp;
-// // // // //             } else if (data.timestamp) {
-// // // // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // // // //             } else {
-// // // // //               timestamp = Timestamp.now();
-// // // // //             }
-
-// // // // //             return {
-// // // // //               id: doc.id,
-// // // // //               amount: Number(data.amount ?? 0),
-// // // // //               profit: Number(data.profit ?? 0),
-// // // // //               date: data.date ?? "",
-// // // // //               timestamp,
-// // // // //               medicineId: data.medicine_id,
-// // // // //               medicineName: data.medicine_name,
-// // // // //               quantity: Number(data.quantity ?? 0),
-// // // // //               costPrice: Number(data.cost_price ?? 0),
-// // // // //               retailPrice: Number(data.retail_price ?? 0),
-// // // // //             };
-// // // // //           }
-// // // // //         );
-
-// // // // //         setTodaysSales(salesData);
-// // // // //       } catch (err) {
-// // // // //         console.error("Error fetching today's sales:", err);
-// // // // //       }
-// // // // //     };
-// // // // //     fetchSales();
-// // // // //   }, []);
-
-// // // // //   // Fetch recent prescriptions (latest 50) from collection 'prescriptions'
-// // // // //   useEffect(() => {
-// // // // //     const fetchPrescriptions = async () => {
-// // // // //       try {
-// // // // //         // latest first
-// // // // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // // // //         const snap = await getDocs(q);
-// // // // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // // // //           const data = d.data();
-// // // // //           return {
-// // // // //             id: d.id,
-// // // // //             patient: data.patient,
-// // // // //             prescription: data.prescription || data.prescribed || [],
-// // // // //             totalItems: data.totalItems,
-// // // // //             totalRetail: data.totalRetail,
-// // // // //             timestamp: data.timestamp,
-// // // // //           };
-// // // // //         });
-// // // // //         setPrescriptions(docs);
-// // // // //       } catch (err) {
-// // // // //         console.error("Error fetching prescriptions:", err);
-// // // // //       }
-// // // // //     };
-
-// // // // //     fetchPrescriptions();
-// // // // //   }, []);
-
-// // // // //   // Add medicine to cart
-// // // // //   const addToCart = (medicine: any, quantity: number = 1) => {
-// // // // //     const normalizedMedicine: Medicine = {
-// // // // //       id: medicine.id,
-// // // // //       name: medicine.name,
-// // // // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // // // //       retailPrice: Number(
-// // // // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // // // //       ),
-// // // // //       quantity: Number(medicine.quantity ?? 0),
-// // // // //       createdAt: medicine.created_at,
-// // // // //       updatedAt: medicine.updated_at,
-// // // // //     };
-
-// // // // //     const existingItem = cart.find(
-// // // // //       (item) => item.medicineId === normalizedMedicine.id
-// // // // //     );
-// // // // //     if (existingItem) {
-// // // // //       setCart(
-// // // // //         cart.map((item) =>
-// // // // //           item.medicineId === normalizedMedicine.id
-// // // // //             ? { ...item, quantity: item.quantity + quantity }
-// // // // //             : item
-// // // // //         )
-// // // // //       );
-// // // // //     } else {
-// // // // //       const newItem: CartItem = {
-// // // // //         medicineId: normalizedMedicine.id,
-// // // // //         medicineName: normalizedMedicine.name,
-// // // // //         quantity,
-// // // // //         price: normalizedMedicine.retailPrice,
-// // // // //         cost: normalizedMedicine.costPrice,
-// // // // //         medicine: normalizedMedicine,
-// // // // //       };
-// // // // //       setCart((prev) => [...prev, newItem]);
-// // // // //     }
-// // // // //   };
-
-// // // // //   // Add multiple items (used by loading a prescription)
-// // // // //   const addMultipleToCart = (items: {
-// // // // //     id?: string;
-// // // // //     name?: string;
-// // // // //     qty?: number;
-// // // // //     retail_price?: number;
-// // // // //     cost_price?: number;
-// // // // //   }[]) => {
-// // // // //     for (const it of items) {
-// // // // //       const medObj = {
-// // // // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // // // //         name: it.name || "Unnamed",
-// // // // //         cost_price: it.cost_price ?? 0,
-// // // // //         retail_price: it.retail_price ?? 0,
-// // // // //         quantity: it.qty ?? 1,
-// // // // //       };
-// // // // //       addToCart(medObj, medObj.quantity);
-// // // // //     }
-// // // // //   };
-
-// // // // //   // Update quantity in cart
-// // // // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // // // //     if (newQuantity <= 0) {
-// // // // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // // // //     } else {
-// // // // //       setCart(
-// // // // //         cart.map((item) =>
-// // // // //           item.medicineId === medicineId
-// // // // //             ? { ...item, quantity: newQuantity }
-// // // // //             : item
-// // // // //         )
-// // // // //       );
-// // // // //     }
-// // // // //   };
-
-// // // // //   // Totals
-// // // // //   const getTotalAmount = () =>
-// // // // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-// // // // //   // profit rounded to two decimals when displayed
-// // // // //   const getTotalProfit = () =>
-// // // // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // // // //   // ------------------ PROCESS SALE ------------------
-// // // // //   const processSale = async () => {
-// // // // //     if (cart.length === 0) return;
-
-// // // // //     try {
-// // // // //       for (const item of cart) {
-// // // // //         const amount = item.price * item.quantity;
-// // // // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // // // //         const saleDoc = {
-// // // // //           amount,
-// // // // //           profit,
-// // // // //           date: new Date().toISOString().split("T")[0],
-// // // // //           timestamp: Timestamp.now(),
-// // // // //           medicine_id: item.medicineId,
-// // // // //           medicine_name: item.medicineName,
-// // // // //           quantity: item.quantity,
-// // // // //           cost_price: item.cost,
-// // // // //           retail_price: item.price,
-// // // // //         };
-
-// // // // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // // // //         // ✅ Update stock in main firebase's medicines collection (if exists)
-// // // // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // // // //         const medicineSnap = await getDoc(medicineRef);
-
-// // // // //         if (medicineSnap.exists()) {
-// // // // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // // // //           await updateDoc(medicineRef, {
-// // // // //             quantity: Math.max(0, currentQty - item.quantity), // prevent negative stock
-// // // // //           });
-// // // // //         }
-// // // // //       }
-
-// // // // //       setCart([]);
-
-// // // // //       // ✅ Delete loaded prescription if any
-// // // // // if (activePrescriptionId) {
-// // // // //   try {
-// // // // //     await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // // // //     setPrescriptions((prev) =>
-// // // // //       prev.filter((p) => p.id !== activePrescriptionId)
-// // // // //     );
-// // // // //     setActivePrescriptionId(null);
-// // // // //   } catch (err) {
-// // // // //     console.error("Failed to delete prescription:", err);
-// // // // //   }
-// // // // // }
-
-
-// // // // //       toast({
-// // // // //         title: "Sale processed",
-// // // // //         description: "Sale saved and stock updated.",
-// // // // //         variant: "default",
-// // // // //       });
-
-// // // // //       // refresh today's sales
-// // // // //       const today = new Date().toISOString().split("T")[0];
-// // // // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // // // //       const snapshot = await getDocs(q);
-
-// // // // //       const salesData: Sale[] = snapshot.docs.map(
-// // // // //         (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // // // //           const data = doc.data();
-// // // // //           let timestamp: Timestamp;
-// // // // //           if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // // // //             timestamp = data.timestamp;
-// // // // //           } else if (data.timestamp) {
-// // // // //             timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // // // //           } else {
-// // // // //             timestamp = Timestamp.now();
-// // // // //           }
-// // // // //           return {
-// // // // //             id: doc.id,
-// // // // //             amount: Number(data.amount ?? 0),
-// // // // //             profit: Number(data.profit ?? 0),
-// // // // //             date: data.date ?? "",
-// // // // //             timestamp,
-// // // // //             medicineId: data.medicine_id,
-// // // // //             medicineName: data.medicine_name,
-// // // // //             quantity: Number(data.quantity ?? 0),
-// // // // //             costPrice: Number(data.cost_price ?? 0),
-// // // // //             retailPrice: Number(data.retail_price ?? 0),
-// // // // //           };
-// // // // //         }
-// // // // //       );
-
-// // // // //       setTodaysSales(salesData);
-// // // // //     } catch (err) {
-// // // // //       console.error("Error processing sale:", err);
-// // // // //       toast({
-// // // // //         title: "Error",
-// // // // //         description: "Failed to process sale. Check console.",
-// // // // //         variant: "destructive",
-// // // // //       });
-// // // // //     }
-// // // // //   };
-
-// // // // //   // ------------------ REVERSE SALE ------------------
-// // // // //   const reverseSale = async (sale: Sale) => {
-// // // // //     try {
-// // // // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // // // //       const medicineSnap = await getDoc(medicineRef);
-
-// // // // //       if (!medicineSnap.exists()) {
-// // // // //         console.error("Medicine not found:", sale.medicineId);
-// // // // //         return;
-// // // // //       }
-
-// // // // //       const currentQty = medicineSnap.data().quantity ?? 0;
-
-// // // // //       await updateDoc(medicineRef, {
-// // // // //         quantity: currentQty + sale.quantity,
-// // // // //       });
-
-// // // // //       const saleRef = doc(db, "sales", sale.id);
-// // // // //       await deleteDoc(saleRef);
-
-// // // // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // // // //       toast({
-// // // // //         title: "Sale reversed",
-// // // // //         description: "Sale removed and stock updated.",
-// // // // //         variant: "default",
-// // // // //       });
-// // // // //     } catch (err) {
-// // // // //       console.error("Error reversing sale:", err);
-// // // // //       toast({
-// // // // //         title: "Error",
-// // // // //         description: "Failed to reverse sale.",
-// // // // //         variant: "destructive",
-// // // // //       });
-// // // // //     }
-// // // // //   };
-
-// // // // //   // ------------------ CLEAR CART (Return Button) ------------------
-// // // // //   const handleReturn = () => {
-// // // // //     if (cart.length === 0) return;
-// // // // //     const confirmClear = window.confirm(
-// // // // //       "Are you sure you want to remove all medicines from the cart?"
-// // // // //     );
-// // // // //     if (confirmClear) setCart([]);
-// // // // //   };
-
-// // // // //   // ------------------ JSX ------------------
-
-// // // // //   return (
-// // // // //     <div className="p-6">
-// // // // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // // // //         {/* Left Side */}
-// // // // //         <div className="space-y-6">
-// // // // //           <h1 className="text-3xl font-bold text-foreground">
-// // // // //             Sales Management
-// // // // //           </h1>
-
-// // // // //           {/* Medicine Search */}
-// // // // //           <div className="medical-card p-4">
-// // // // //             <h3 className="font-semibold text-foreground mb-3">
-// // // // //               Add Medicine to Cart
-// // // // //             </h3>
-// // // // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // // // //           </div>
-
-// // // // //           {/* Shopping Cart */}
-// // // // //           <div className="medical-card">
-// // // // //             <div className="p-4 border-b border-border flex items-center justify-between">
-// // // // //               <h3 className="font-semibold text-foreground">Shopping Cart</h3>
-// // // // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // // // //             </div>
-// // // // //             <div className="p-4">
-// // // // //               {cart.length > 0 ? (
-// // // // //                 <>
-// // // // //                   {cart.map((item) => (
-// // // // //                     <div
-// // // // //                       key={item.medicineId}
-// // // // //                       className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
-// // // // //                     >
-// // // // //                       <div className="flex-1">
-// // // // //                         <h4 className="font-medium text-foreground">
-// // // // //                           {item.medicineName}
-// // // // //                         </h4>
-// // // // //                         <p className="text-sm text-muted-foreground">
-// // // // //                           PKR {item.price} each
-// // // // //                         </p>
-// // // // //                       </div>
-// // // // //                       <div className="flex items-center space-x-2">
-// // // // //                         <Button
-// // // // //                           variant="outline"
-// // // // //                           size="sm"
-// // // // //                           onClick={() =>
-// // // // //                             updateQuantity(item.medicineId, item.quantity - 1)
-// // // // //                           }
-// // // // //                         >
-// // // // //                           <Minus className="w-3 h-3" />
-// // // // //                         </Button>
-// // // // //                         <span className="w-8 text-center font-medium">
-// // // // //                           {item.quantity}
-// // // // //                         </span>
-// // // // //                         <Button
-// // // // //                           variant="outline"
-// // // // //                           size="sm"
-// // // // //                           onClick={() =>
-// // // // //                             updateQuantity(item.medicineId, item.quantity + 1)
-// // // // //                           }
-// // // // //                         >
-// // // // //                           <Plus className="w-3 h-3" />
-// // // // //                         </Button>
-// // // // //                       </div>
-// // // // //                       <div className="text-right ml-4">
-// // // // //                         <p className="font-medium text-foreground">
-// // // // //                           PKR {(item.price * item.quantity).toFixed(2)}
-// // // // //                         </p>
-// // // // //                       </div>
-// // // // //                     </div>
-// // // // //                   ))}
-
-// // // // //                   <div className="border-t border-border pt-3 mt-4">
-// // // // //                     <div className="flex justify-between items-center mb-2">
-// // // // //                       <span className="text-muted-foreground">Subtotal:</span>
-// // // // //                       <span className="font-medium text-foreground">
-// // // // //                         PKR {getTotalAmount().toFixed(2)}
-// // // // //                       </span>
-// // // // //                     </div>
-// // // // //                     <div className="flex justify-between items-center mb-4">
-// // // // //                       <span className="text-muted-foreground">Profit:</span>
-// // // // //                       <span className="font-medium text-success">
-// // // // //                         PKR {getTotalProfit().toFixed(2)}
-// // // // //                       </span>
-// // // // //                     </div>
-// // // // //                     <div className="flex space-x-3">
-// // // // //                       <Button onClick={processSale} className="flex-1 gap-2">
-// // // // //                         <Receipt className="w-4 h-4" /> Process Sale
-// // // // //                       </Button>
-// // // // //                       <Button
-// // // // //                         variant="outline"
-// // // // //                         className="gap-2"
-// // // // //                         onClick={handleReturn}
-// // // // //                       >
-// // // // //                         <RotateCcw className="w-4 h-4" /> Return
-// // // // //                       </Button>
-// // // // //                     </div>
-// // // // //                   </div>
-// // // // //                 </>
-// // // // //               ) : (
-// // // // //                 <div className="text-center py-8">
-// // // // //                   <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-// // // // //                   <p className="text-muted-foreground">Your cart is empty</p>
-// // // // //                 </div>
-// // // // //               )}
-// // // // //             </div>
-// // // // //           </div>
-// // // // //         </div>
-
-// // // // //         {/* Right Side - Today's Sales, Prescriptions & Recent Sales */}
-// // // // //         <div className="space-y-6">
-// // // // //           <h2 className="text-2xl font-bold text-foreground">
-// // // // //             Today's Sales Summary
-// // // // //           </h2>
-
-// // // // //           <div className="grid grid-cols-2 gap-4">
-// // // // //             <div className="stats-card-primary p-4">
-// // // // //               <p className="text-sm font-medium text-primary/70">Total Sales</p>
-// // // // //               <h3 className="text-xl font-bold text-primary">
-// // // // //                 PKR{" "}
-// // // // //                 {todaysSales
-// // // // //                   .reduce((sum, sale) => sum + (sale.amount ?? 0), 0)
-// // // // //                   .toFixed(2)}
-// // // // //               </h3>
-// // // // //             </div>
-// // // // //             <div className="stats-card-success p-4">
-// // // // //               <p className="text-sm font-medium text-success/70">
-// // // // //                 Total Profit
-// // // // //               </p>
-// // // // //               <h3 className="text-xl font-bold text-success">
-// // // // //                 PKR{" "}
-// // // // //                 {todaysSales
-// // // // //                   .reduce((sum, sale) => sum + (sale.profit ?? 0), 0)
-// // // // //                   .toFixed(2)}
-// // // // //               </h3>
-// // // // //             </div>
-// // // // //           </div>
-
-// // // // //           {/* Prescribed Section (A: below Today's Sales Summary) */}
-// // // // //           <div className="medical-card">
-// // // // //             <div className="p-4 border-b border-border flex items-center justify-between">
-// // // // //               <h3 className="font-semibold text-foreground">Prescriptions</h3>
-// // // // //             </div>
-
-// // // // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto pr-2">
-// // // // //               {prescriptions.length === 0 ? (
-// // // // //                 <p className="text-muted-foreground">No prescriptions found.</p>
-// // // // //               ) : (
-// // // // //                 prescriptions.map((pres) => (
-// // // // //                   <div
-// // // // //                     key={pres.id}
-// // // // //                     className="p-3 bg-accent/20 rounded-lg flex items-center justify-between"
-// // // // //                   >
-// // // // //                     <div>
-// // // // //                       <p className="font-medium text-foreground">
-// // // // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // // // //                       </p>
-// // // // //                       <p className="text-sm text-muted-foreground">
-// // // // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} •{" "}
-// // // // //                         PKR {(pres.totalRetail ?? 0).toFixed(2)}
-// // // // //                       </p>
-// // // // //                     </div>
-
-// // // // //                     <div className="flex items-center gap-2">
-// // // // //                     <Button
-// // // // //   size="sm"
-// // // // //   onClick={() => {
-// // // // //     if (!pres.prescription || pres.prescription.length === 0) {
-// // // // //       toast({
-// // // // //         title: "Empty prescription",
-// // // // //         description: "This prescription has no medicines.",
-// // // // //         variant: "destructive",
-// // // // //       });
-// // // // //       return;
-// // // // //     }
-// // // // //     addMultipleToCart(pres.prescription);
-// // // // //     setActivePrescriptionId(pres.id); // ✅ remember which prescription was loaded
-// // // // //     toast({
-// // // // //       title: "Prescription loaded",
-// // // // //       description: "All medicines added to cart.",
-// // // // //       variant: "default",
-// // // // //     });
-// // // // //   }}
-// // // // // >
-// // // // //   Add to Cart
-// // // // // </Button>
-
-// // // // //                     </div>
-// // // // //                   </div>
-// // // // //                 ))
-// // // // //               )}
-// // // // //             </div>
-// // // // //           </div>
-
-// // // // //           {/* Recent Sales (scrollable area on the right) */}
-// // // // //           <div className="medical-card">
-// // // // //             <div className="p-4 border-b border-border">
-// // // // //               <h3 className="font-semibold text-foreground">Recent Sales</h3>
-// // // // //             </div>
-
-// // // // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto pr-2">
-// // // // //               {todaysSales.length === 0 ? (
-// // // // //                 <p className="text-muted-foreground">No sales yet today.</p>
-// // // // //               ) : (
-// // // // //                 todaysSales.map((sale) => (
-// // // // //                   <div key={sale.id} className="p-3 bg-accent/20 rounded-lg">
-// // // // //                     <div className="flex justify-between items-start mb-2">
-// // // // //                       <div>
-// // // // //                         <p className="font-medium text-foreground">
-// // // // //                           {sale.medicineName}
-// // // // //                         </p>
-// // // // //                         <p className="text-sm text-muted-foreground">
-// // // // //                           {sale.timestamp
-// // // // //                             ? sale.timestamp.toDate().toLocaleTimeString()
-// // // // //                             : ""}
-// // // // //                         </p>
-// // // // //                       </div>
-// // // // //                       <div className="text-right">
-// // // // //                         <p className="font-medium text-foreground">
-// // // // //                           PKR {Number(sale.amount).toFixed(2)}
-// // // // //                         </p>
-// // // // //                         <p className="text-sm text-success">
-// // // // //                           Profit: PKR {Number(sale.profit).toFixed(2)}
-// // // // //                         </p>
-// // // // //                       </div>
-// // // // //                     </div>
-// // // // //                     <div className="flex justify-between items-center">
-// // // // //                       <span className="text-sm text-muted-foreground">
-// // // // //                         Qty: {sale.quantity}
-// // // // //                       </span>
-// // // // //                       <Button
-// // // // //                         variant="destructive"
-// // // // //                         size="sm"
-// // // // //                         onClick={() => reverseSale(sale)}
-// // // // //                         className="gap-1"
-// // // // //                       >
-// // // // //                         <RotateCcw className="w-4 h-4" /> Reverse
-// // // // //                       </Button>
-// // // // //                     </div>
-// // // // //                   </div>
-// // // // //                 ))
-// // // // //               )}
-// // // // //             </div>
-// // // // //           </div>
-// // // // //         </div>
-// // // // //       </div>
-// // // // //     </div>
-// // // // //   );
-// // // // // }
-
-// // // // "use client";
-
-// // // // import { useState, useEffect } from "react";
-// // // // import {
-// // // //   ShoppingCart,
-// // // //   Plus,
-// // // //   Minus,
-// // // //   Receipt,
-// // // //   RotateCcw,
-// // // //   FileDown, // for PDF button
-// // // // } from "lucide-react";
-// // // // import { Button } from "@/components/ui/button";
-// // // // import { SearchBar } from "@/components/SearchBar";
-// // // // import { db } from "@/firebase";
-// // // // import {
-// // // //   collection,
-// // // //   addDoc,
-// // // //   getDocs,
-// // // //   query,
-// // // //   where,
-// // // //   Timestamp,
-// // // //   doc,
-// // // //   updateDoc,
-// // // //   deleteDoc,
-// // // //   getDoc,
-// // // //   DocumentData,
-// // // //   QueryDocumentSnapshot,
-// // // //   orderBy,
-// // // //   limit,
-// // // // } from "firebase/firestore";
-// // // // import { useToast } from "@/hooks/use-toast";
-// // // // import generateSalePDF from "@/components/SalePDF"; // PDF generator component
-
-// // // // // ------------------ TYPES ------------------
-
-// // // // export interface Medicine {
-// // // //   id: string;
-// // // //   name: string;
-// // // //   costPrice: number;
-// // // //   retailPrice: number;
-// // // //   quantity: number;
-// // // //   createdAt?: Timestamp;
-// // // //   updatedAt?: Timestamp;
-// // // // }
-
-// // // // export interface CartItem {
-// // // //   medicineId: string;
-// // // //   medicineName: string;
-// // // //   quantity: number;
-// // // //   price: number;
-// // // //   cost: number;
-// // // //   medicine: Medicine;
-// // // // }
-
-// // // // interface Sale {
-// // // //   id: string;
-// // // //   amount: number;
-// // // //   profit: number;
-// // // //   date: string;
-// // // //   timestamp: Timestamp;
-// // // //   medicineId: string;
-// // // //   medicineName: string;
-// // // //   quantity: number;
-// // // //   costPrice: number;
-// // // //   retailPrice: number;
-// // // // }
-
-// // // // interface PrescriptionDoc {
-// // // //   id: string;
-// // // //   patient?: { name?: string; referringDoctor?: string; [k: string]: any };
-// // // //   prescription?: Array<{
-// // // //     id?: string;
-// // // //     name?: string;
-// // // //     qty?: number;
-// // // //     retail_price?: number;
-// // // //     cost_price?: number;
-// // // //     dosage?: string;
-// // // //     instructions?: string;
-// // // //     [k: string]: any;
-// // // //   }>;
-// // // //   totalItems?: number;
-// // // //   totalRetail?: number;
-// // // //   timestamp?: string | any;
-// // // // }
-
-// // // // // ------------------ COMPONENT ------------------
-
-// // // // export default function Sales() {
-// // // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-// // // //   const { toast } = useToast();
-
-// // // //   // Fetch today's sales
-// // // //   useEffect(() => {
-// // // //     const fetchSales = async () => {
-// // // //       try {
-// // // //         const today = new Date().toISOString().split("T")[0];
-// // // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // // //         const snapshot = await getDocs(q);
-
-// // // //         const salesData: Sale[] = snapshot.docs.map(
-// // // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // // //             const data = doc.data();
-// // // //             let timestamp: Timestamp;
-// // // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // // //               timestamp = data.timestamp;
-// // // //             } else if (data.timestamp) {
-// // // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // // //             } else {
-// // // //               timestamp = Timestamp.now();
-// // // //             }
-// // // //             return {
-// // // //               id: doc.id,
-// // // //               amount: Number(data.amount ?? 0),
-// // // //               profit: Number(data.profit ?? 0),
-// // // //               date: data.date ?? "",
-// // // //               timestamp,
-// // // //               medicineId: data.medicine_id,
-// // // //               medicineName: data.medicine_name,
-// // // //               quantity: Number(data.quantity ?? 0),
-// // // //               costPrice: Number(data.cost_price ?? 0),
-// // // //               retailPrice: Number(data.retail_price ?? 0),
-// // // //             };
-// // // //           }
-// // // //         );
-// // // //         setTodaysSales(salesData);
-// // // //       } catch (err) {
-// // // //         console.error("Error fetching today's sales:", err);
-// // // //       }
-// // // //     };
-// // // //     fetchSales();
-// // // //   }, []);
-
-// // // //   // Fetch prescriptions (latest 50)
-// // // //   useEffect(() => {
-// // // //     const fetchPrescriptions = async () => {
-// // // //       try {
-// // // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // // //         const snap = await getDocs(q);
-// // // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // // //           const data = d.data();
-// // // //           return {
-// // // //             id: d.id,
-// // // //             patient: data.patient,
-// // // //             prescription: data.prescription || data.prescribed || [],
-// // // //             totalItems: data.totalItems,
-// // // //             totalRetail: data.totalRetail,
-// // // //             timestamp: data.timestamp,
-// // // //           };
-// // // //         });
-// // // //         setPrescriptions(docs);
-// // // //       } catch (err) {
-// // // //         console.error("Error fetching prescriptions:", err);
-// // // //       }
-// // // //     };
-// // // //     fetchPrescriptions();
-// // // //   }, []);
-
-// // // //   // Add single medicine
-// // // //   const addToCart = (medicine: any, quantity: number = 1) => {
-// // // //     const normalizedMedicine: Medicine = {
-// // // //       id: medicine.id,
-// // // //       name: medicine.name,
-// // // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // // //       retailPrice: Number(
-// // // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // // //       ),
-// // // //       quantity: Number(medicine.quantity ?? 0),
-// // // //       createdAt: medicine.created_at,
-// // // //       updatedAt: medicine.updated_at,
-// // // //     };
-
-// // // //     const existingItem = cart.find(
-// // // //       (item) => item.medicineId === normalizedMedicine.id
-// // // //     );
-// // // //     if (existingItem) {
-// // // //       setCart(
-// // // //         cart.map((item) =>
-// // // //           item.medicineId === normalizedMedicine.id
-// // // //             ? { ...item, quantity: item.quantity + quantity }
-// // // //             : item
-// // // //         )
-// // // //       );
-// // // //     } else {
-// // // //       const newItem: CartItem = {
-// // // //         medicineId: normalizedMedicine.id,
-// // // //         medicineName: normalizedMedicine.name,
-// // // //         quantity,
-// // // //         price: normalizedMedicine.retailPrice,
-// // // //         cost: normalizedMedicine.costPrice,
-// // // //         medicine: normalizedMedicine,
-// // // //       };
-// // // //       setCart((prev) => [...prev, newItem]);
-// // // //     }
-// // // //   };
-
-// // // //   // Add all medicines from a prescription
-// // // //   const addMultipleToCart = (items: {
-// // // //     id?: string;
-// // // //     name?: string;
-// // // //     qty?: number;
-// // // //     retail_price?: number;
-// // // //     cost_price?: number;
-// // // //   }[]) => {
-// // // //     for (const it of items) {
-// // // //       const medObj = {
-// // // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // // //         name: it.name || "Unnamed",
-// // // //         cost_price: it.cost_price ?? 0,
-// // // //         retail_price: it.retail_price ?? 0,
-// // // //         quantity: it.qty ?? 1,
-// // // //       };
-// // // //       addToCart(medObj, medObj.quantity);
-// // // //     }
-// // // //   };
-
-// // // //   // Update quantity
-// // // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // // //     if (newQuantity <= 0) {
-// // // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // // //     } else {
-// // // //       setCart(
-// // // //         cart.map((item) =>
-// // // //           item.medicineId === medicineId
-// // // //             ? { ...item, quantity: newQuantity }
-// // // //             : item
-// // // //         )
-// // // //       );
-// // // //     }
-// // // //   };
-
-// // // //   // Totals
-// // // //   const getTotalAmount = () =>
-// // // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-// // // //   const getTotalProfit = () =>
-// // // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // // //   // ------------------ PROCESS SALE ------------------
-// // // //   const processSale = async () => {
-// // // //     if (cart.length === 0) return;
-
-// // // //     try {
-// // // //       for (const item of cart) {
-// // // //         const amount = item.price * item.quantity;
-// // // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // // //         const saleDoc = {
-// // // //           amount,
-// // // //           profit,
-// // // //           date: new Date().toISOString().split("T")[0],
-// // // //           timestamp: Timestamp.now(),
-// // // //           medicine_id: item.medicineId,
-// // // //           medicine_name: item.medicineName,
-// // // //           quantity: item.quantity,
-// // // //           cost_price: item.cost,
-// // // //           retail_price: item.price,
-// // // //         };
-
-// // // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // // //         const medicineSnap = await getDoc(medicineRef);
-// // // //         if (medicineSnap.exists()) {
-// // // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // // //           await updateDoc(medicineRef, {
-// // // //             quantity: Math.max(0, currentQty - item.quantity),
-// // // //           });
-// // // //         }
-// // // //       }
-
-// // // //       setCart([]);
-
-// // // //       if (activePrescriptionId) {
-// // // //         try {
-// // // //           await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // // //           setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-// // // //           setActivePrescriptionId(null);
-// // // //         } catch (err) {
-// // // //           console.error("Failed to delete prescription:", err);
-// // // //         }
-// // // //       }
-
-// // // //       toast({
-// // // //         title: "Sale processed",
-// // // //         description: "Sale saved and stock updated.",
-// // // //         variant: "default",
-// // // //       });
-
-// // // //       const today = new Date().toISOString().split("T")[0];
-// // // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // // //       const snapshot = await getDocs(q);
-// // // //       const salesData: Sale[] = snapshot.docs.map((doc) => {
-// // // //         const data = doc.data();
-// // // //         return {
-// // // //           id: doc.id,
-// // // //           amount: Number(data.amount ?? 0),
-// // // //           profit: Number(data.profit ?? 0),
-// // // //           date: data.date ?? "",
-// // // //           timestamp: data.timestamp,
-// // // //           medicineId: data.medicine_id,
-// // // //           medicineName: data.medicine_name,
-// // // //           quantity: Number(data.quantity ?? 0),
-// // // //           costPrice: Number(data.cost_price ?? 0),
-// // // //           retailPrice: Number(data.retail_price ?? 0),
-// // // //         };
-// // // //       });
-// // // //       setTodaysSales(salesData);
-// // // //     } catch (err) {
-// // // //       console.error("Error processing sale:", err);
-// // // //       toast({
-// // // //         title: "Error",
-// // // //         description: "Failed to process sale. Check console.",
-// // // //         variant: "destructive",
-// // // //       });
-// // // //     }
-// // // //   };
-
-// // // //   // Process sale & print PDF
-// // // //   const handleProcessSaleWithPDF = async () => {
-// // // //     await processSale();
-// // // //     generateSalePDF(cart);
-// // // //   };
-
-// // // //   // Reverse sale
-// // // //   const reverseSale = async (sale: Sale) => {
-// // // //     try {
-// // // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // // //       const medicineSnap = await getDoc(medicineRef);
-
-// // // //       if (!medicineSnap.exists()) return;
-
-// // // //       const currentQty = medicineSnap.data().quantity ?? 0;
-// // // //       await updateDoc(medicineRef, {
-// // // //         quantity: currentQty + sale.quantity,
-// // // //       });
-
-// // // //       await deleteDoc(doc(db, "sales", sale.id));
-// // // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // // //       toast({
-// // // //         title: "Sale reversed",
-// // // //         description: "Sale removed and stock updated.",
-// // // //         variant: "default",
-// // // //       });
-// // // //     } catch (err) {
-// // // //       console.error("Error reversing sale:", err);
-// // // //       toast({
-// // // //         title: "Error",
-// // // //         description: "Failed to reverse sale.",
-// // // //         variant: "destructive",
-// // // //       });
-// // // //     }
-// // // //   };
-
-// // // //   // Clear cart
-// // // //   const handleReturn = () => {
-// // // //     if (cart.length === 0) return;
-// // // //     const confirmClear = window.confirm("Remove all medicines from cart?");
-// // // //     if (confirmClear) setCart([]);
-// // // //   };
-
-// // // //   // ------------------ JSX ------------------
-
-// // // //   return (
-// // // //     <div className="p-6">
-// // // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // // //         {/* Left Side */}
-// // // //         <div className="space-y-6">
-// // // //           <h1 className="text-3xl font-bold text-foreground">Sales Management</h1>
-
-// // // //           {/* Medicine Search */}
-// // // //           <div className="medical-card p-4">
-// // // //             <h3 className="font-semibold mb-3">Add Medicine to Cart</h3>
-// // // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // // //           </div>
-
-// // // //           {/* Shopping Cart */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b flex justify-between">
-// // // //               <h3 className="font-semibold">Shopping Cart</h3>
-// // // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // // //             </div>
-
-// // // //             <div className="p-4">
-// // // //               {cart.length > 0 ? (
-// // // //                 <>
-// // // //                   {cart.map((item) => (
-// // // //                     <div
-// // // //                       key={item.medicineId}
-// // // //                       className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
-// // // //                     >
-// // // //                       <div className="flex-1">
-// // // //                         <h4 className="font-medium">{item.medicineName}</h4>
-// // // //                         <p className="text-sm text-muted-foreground">
-// // // //                           PKR {item.price} each
-// // // //                         </p>
-// // // //                       </div>
-// // // //                       <div className="flex items-center space-x-2">
-// // // //                         <Button
-// // // //                           variant="outline"
-// // // //                           size="sm"
-// // // //                           onClick={() =>
-// // // //                             updateQuantity(item.medicineId, item.quantity - 1)
-// // // //                           }
-// // // //                         >
-// // // //                           <Minus className="w-3 h-3" />
-// // // //                         </Button>
-// // // //                         <span className="w-8 text-center">{item.quantity}</span>
-// // // //                         <Button
-// // // //                           variant="outline"
-// // // //                           size="sm"
-// // // //                           onClick={() =>
-// // // //                             updateQuantity(item.medicineId, item.quantity + 1)
-// // // //                           }
-// // // //                         >
-// // // //                           <Plus className="w-3 h-3" />
-// // // //                         </Button>
-// // // //                       </div>
-// // // //                       <div className="text-right ml-4">
-// // // //                         <p className="font-medium">
-// // // //                           PKR {(item.price * item.quantity).toFixed(2)}
-// // // //                         </p>
-// // // //                       </div>
-// // // //                     </div>
-// // // //                   ))}
-
-// // // //                   <div className="border-t pt-3 mt-4">
-// // // //                     <div className="flex justify-between mb-2">
-// // // //                       <span>Subtotal:</span>
-// // // //                       <span>PKR {getTotalAmount().toFixed(2)}</span>
-// // // //                     </div>
-// // // //                     <div className="flex justify-between mb-4">
-// // // //                       <span>Profit:</span>
-// // // //                       <span className="text-success">
-// // // //                         PKR {getTotalProfit().toFixed(2)}
-// // // //                       </span>
-// // // //                     </div>
-
-// // // //                     {/* Conditional buttons */}
-// // // //                     {activePrescriptionId ? (
-// // // //                       <div className="flex space-x-3">
-// // // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // // //                         </Button>
-// // // //                         <Button
-// // // //                           onClick={handleProcessSaleWithPDF}
-// // // //                           className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
-// // // //                         >
-// // // //                           <FileDown className="w-4 h-4" /> Process & Print PDF
-// // // //                         </Button>
-// // // //                         <Button variant="outline" onClick={handleReturn}>
-// // // //                           <RotateCcw className="w-4 h-4" /> Return
-// // // //                         </Button>
-// // // //                       </div>
-// // // //                     ) : (
-// // // //                       <div className="flex space-x-3">
-// // // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // // //                         </Button>
-// // // //                         <Button variant="outline" onClick={handleReturn}>
-// // // //                           <RotateCcw className="w-4 h-4" /> Return
-// // // //                         </Button>
-// // // //                       </div>
-// // // //                     )}
-// // // //                   </div>
-// // // //                 </>
-// // // //               ) : (
-// // // //                 <div className="text-center py-8">
-// // // //                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-// // // //                   <p>Your cart is empty</p>
-// // // //                 </div>
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-// // // //         </div>
-
-// // // //         {/* Right Side */}
-// // // //         <div className="space-y-6">
-// // // //           <h2 className="text-2xl font-bold">Today's Sales Summary</h2>
-
-// // // //           <div className="grid grid-cols-2 gap-4">
-// // // //             <div className="stats-card-primary p-4">
-// // // //               <p>Total Sales</p>
-// // // //               <h3 className="text-xl font-bold">
-// // // //                 PKR{" "}
-// // // //                 {todaysSales
-// // // //                   .reduce((sum, s) => sum + (s.amount ?? 0), 0)
-// // // //                   .toFixed(2)}
-// // // //               </h3>
-// // // //             </div>
-// // // //             <div className="stats-card-success p-4">
-// // // //               <p>Total Profit</p>
-// // // //               <h3 className="text-xl font-bold text-success">
-// // // //                 PKR{" "}
-// // // //                 {todaysSales
-// // // //                   .reduce((sum, s) => sum + (s.profit ?? 0), 0)
-// // // //                   .toFixed(2)}
-// // // //               </h3>
-// // // //             </div>
-// // // //           </div>
-
-// // // //           {/* Prescriptions */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b flex justify-between">
-// // // //               <h3 className="font-semibold">Prescriptions</h3>
-// // // //             </div>
-// // // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-// // // //               {prescriptions.length === 0 ? (
-// // // //                 <p>No prescriptions found.</p>
-// // // //               ) : (
-// // // //                 prescriptions.map((pres) => (
-// // // //                   <div
-// // // //                     key={pres.id}
-// // // //                     className="p-3 bg-accent/20 rounded-lg flex justify-between"
-// // // //                   >
-// // // //                     <div>
-// // // //                       <p className="font-medium">
-// // // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // // //                       </p>
-// // // //                       <p className="text-sm text-muted-foreground">
-// // // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} • PKR{" "}
-// // // //                         {(pres.totalRetail ?? 0).toFixed(2)}
-// // // //                       </p>
-// // // //                     </div>
-// // // //                     <Button
-// // // //                       size="sm"
-// // // //                       onClick={() => {
-// // // //                         if (!pres.prescription || pres.prescription.length === 0) {
-// // // //                           toast({
-// // // //                             title: "Empty prescription",
-// // // //                             description: "This prescription has no medicines.",
-// // // //                             variant: "destructive",
-// // // //                           });
-// // // //                           return;
-// // // //                         }
-// // // //                         addMultipleToCart(pres.prescription);
-// // // //                         setActivePrescriptionId(pres.id);
-// // // //                         toast({
-// // // //                           title: "Prescription loaded",
-// // // //                           description: "All medicines added to cart.",
-// // // //                         });
-// // // //                       }}
-// // // //                     >
-// // // //                       Add to Cart
-// // // //                     </Button>
-// // // //                   </div>
-// // // //                 ))
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-
-// // // //           {/* Recent Sales */}
-// // // //           <div className="medical-card">
-// // // //             <div className="p-4 border-b">
-// // // //               <h3 className="font-semibold">Recent Sales</h3>
-// // // //             </div>
-// // // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-// // // //               {todaysSales.length === 0 ? (
-// // // //                 <p>No sales yet today.</p>
-// // // //               ) : (
-// // // //                 todaysSales.map((s) => (
-// // // //                   <div
-// // // //                     key={s.id}
-// // // //                     className="flex justify-between items-center p-2 bg-accent/30 rounded-lg"
-// // // //                   >
-// // // //                     <div>
-// // // //                       <p className="font-medium">{s.medicineName}</p>
-// // // //                       <p className="text-sm text-muted-foreground">
-// // // //                         {s.quantity} × PKR {s.retailPrice} = PKR {s.amount}
-// // // //                       </p>
-// // // //                     </div>
-// // // //                     <Button
-// // // //                       size="sm"
-// // // //                       variant="destructive"
-// // // //                       onClick={() => reverseSale(s)}
-// // // //                     >
-// // // //                       Reverse
-// // // //                     </Button>
-// // // //                   </div>
-// // // //                 ))
-// // // //               )}
-// // // //             </div>
-// // // //           </div>
-// // // //         </div>
-// // // //       </div>
-// // // //     </div>
-// // // //   );
-// // // // }
-
-// // // "use client";
-
-// // // import { useState, useEffect } from "react";
-// // // import {
-// // //   ShoppingCart,
-// // //   Plus,
-// // //   Minus,
-// // //   Receipt,
-// // //   RotateCcw,
-// // //   FileDown,
-// // // } from "lucide-react";
-// // // import { Button } from "@/components/ui/button";
-// // // import { SearchBar } from "@/components/SearchBar";
-// // // import { db } from "@/firebase";
-// // // import {
-// // //   collection,
-// // //   addDoc,
-// // //   getDocs,
-// // //   query,
-// // //   where,
-// // //   Timestamp,
-// // //   doc,
-// // //   updateDoc,
-// // //   deleteDoc,
-// // //   getDoc,
-// // //   DocumentData,
-// // //   QueryDocumentSnapshot,
-// // //   orderBy,
-// // //   limit,
-// // // } from "firebase/firestore";
-// // // import { useToast } from "@/hooks/use-toast";
-// // // import generateSalePDF from "@/components/SalePDF";
-
-// // // // ------------------ TYPES ------------------
-
-// // // export interface Medicine {
-// // //   id: string;
-// // //   name: string;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // //   quantity: number;
-// // //   createdAt?: Timestamp;
-// // //   updatedAt?: Timestamp;
-// // // }
-
-// // // export interface CartItem {
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   price: number;
-// // //   cost: number;
-// // //   medicine: Medicine;
-// // //   dosage?: string;
-// // //   instructions?: string;
-// // // }
-
-// // // interface Sale {
-// // //   id: string;
-// // //   amount: number;
-// // //   profit: number;
-// // //   date: string;
-// // //   timestamp: Timestamp;
-// // //   medicineId: string;
-// // //   medicineName: string;
-// // //   quantity: number;
-// // //   costPrice: number;
-// // //   retailPrice: number;
-// // // }
-
-// // // interface PatientData {
-// // //   name?: string;
-// // //   referringDoctor?: string;
-// // //   age?: string;
-// // //   gender?: string;
-// // //   phone?: string;
-// // //   [k: string]: any;
-// // // }
-
-// // // interface PrescriptionDoc {
-// // //   id: string;
-// // //   patient?: PatientData;
-// // //   prescription?: Array<{
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //     dosage?: string;
-// // //     instructions?: string;
-// // //     [k: string]: any;
-// // //   }>;
-// // //   totalItems?: number;
-// // //   totalRetail?: number;
-// // //   timestamp?: string | any;
-// // // }
-
-// // // // ------------------ COMPONENT ------------------
-
-// // // export default function Sales() {
-// // //   const [cart, setCart] = useState<CartItem[]>([]);
-// // //   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-// // //   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-// // //   const [activePatient, setActivePatient] = useState<PatientData | null>(null);
-// // //   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-// // //   const { toast } = useToast();
-
-// // //   // Fetch today's sales
-// // //   useEffect(() => {
-// // //     const fetchSales = async () => {
-// // //       try {
-// // //         const today = new Date().toISOString().split("T")[0];
-// // //         const q = query(collection(db, "sales"), where("date", "==", today));
-// // //         const snapshot = await getDocs(q);
-
-// // //         const salesData: Sale[] = snapshot.docs.map(
-// // //           (doc: QueryDocumentSnapshot<DocumentData>) => {
-// // //             const data = doc.data();
-// // //             let timestamp: Timestamp;
-// // //             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-// // //               timestamp = data.timestamp;
-// // //             } else if (data.timestamp) {
-// // //               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-// // //             } else {
-// // //               timestamp = Timestamp.now();
-// // //             }
-// // //             return {
-// // //               id: doc.id,
-// // //               amount: Number(data.amount ?? 0),
-// // //               profit: Number(data.profit ?? 0),
-// // //               date: data.date ?? "",
-// // //               timestamp,
-// // //               medicineId: data.medicine_id,
-// // //               medicineName: data.medicine_name,
-// // //               quantity: Number(data.quantity ?? 0),
-// // //               costPrice: Number(data.cost_price ?? 0),
-// // //               retailPrice: Number(data.retail_price ?? 0),
-// // //             };
-// // //           }
-// // //         );
-// // //         setTodaysSales(salesData);
-// // //       } catch (err) {
-// // //         console.error("Error fetching today's sales:", err);
-// // //       }
-// // //     };
-// // //     fetchSales();
-// // //   }, []);
-
-// // //   // Fetch prescriptions (latest 50)
-// // //   useEffect(() => {
-// // //     const fetchPrescriptions = async () => {
-// // //       try {
-// // //         const q = query(collection(db, "prescriptions"), orderBy("timestamp", "desc"), limit(50));
-// // //         const snap = await getDocs(q);
-// // //         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-// // //           const data = d.data();
-// // //           return {
-// // //             id: d.id,
-// // //             patient: data.patient,
-// // //             prescription: data.prescription || data.prescribed || [],
-// // //             totalItems: data.totalItems,
-// // //             totalRetail: data.totalRetail,
-// // //             timestamp: data.timestamp,
-// // //           };
-// // //         });
-// // //         setPrescriptions(docs);
-// // //       } catch (err) {
-// // //         console.error("Error fetching prescriptions:", err);
-// // //       }
-// // //     };
-// // //     fetchPrescriptions();
-// // //   }, []);
-
-// // //   // Add single medicine
-// // //   const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
-// // //     const normalizedMedicine: Medicine = {
-// // //       id: medicine.id,
-// // //       name: medicine.name,
-// // //       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-// // //       retailPrice: Number(
-// // //         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-// // //       ),
-// // //       quantity: Number(medicine.quantity ?? 0),
-// // //       createdAt: medicine.created_at,
-// // //       updatedAt: medicine.updated_at,
-// // //     };
-
-// // //     const existingItem = cart.find(
-// // //       (item) => item.medicineId === normalizedMedicine.id
-// // //     );
-// // //     if (existingItem) {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === normalizedMedicine.id
-// // //             ? { ...item, quantity: item.quantity + quantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     } else {
-// // //       const newItem: CartItem = {
-// // //         medicineId: normalizedMedicine.id,
-// // //         medicineName: normalizedMedicine.name,
-// // //         quantity,
-// // //         price: normalizedMedicine.retailPrice,
-// // //         cost: normalizedMedicine.costPrice,
-// // //         medicine: normalizedMedicine,
-// // //         dosage: dosage || undefined,
-// // //         instructions: instructions || undefined,
-// // //       };
-// // //       setCart((prev) => [...prev, newItem]);
-// // //     }
-// // //   };
-
-// // //   // Add all medicines from a prescription
-// // //   const addMultipleToCart = (items: {
-// // //     id?: string;
-// // //     name?: string;
-// // //     qty?: number;
-// // //     retail_price?: number;
-// // //     cost_price?: number;
-// // //     dosage?: string;
-// // //     instructions?: string;
-// // //   }[]) => {
-// // //     for (const it of items) {
-// // //       const medObj = {
-// // //         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-// // //         name: it.name || "Unnamed",
-// // //         cost_price: it.cost_price ?? 0,
-// // //         retail_price: it.retail_price ?? 0,
-// // //         quantity: it.qty ?? 1,
-// // //       };
-// // //       addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
-// // //     }
-// // //   };
-
-// // //   // Update quantity
-// // //   const updateQuantity = (medicineId: string, newQuantity: number) => {
-// // //     if (newQuantity <= 0) {
-// // //       setCart(cart.filter((item) => item.medicineId !== medicineId));
-// // //     } else {
-// // //       setCart(
-// // //         cart.map((item) =>
-// // //           item.medicineId === medicineId
-// // //             ? { ...item, quantity: newQuantity }
-// // //             : item
-// // //         )
-// // //       );
-// // //     }
-// // //   };
-
-// // //   // Totals
-// // //   const getTotalAmount = () =>
-// // //     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-// // //   const getTotalProfit = () =>
-// // //     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-// // //   // ------------------ PROCESS SALE ------------------
-// // //   const processSale = async () => {
-// // //     if (cart.length === 0) return;
-
-// // //     try {
-// // //       for (const item of cart) {
-// // //         const amount = item.price * item.quantity;
-// // //         const profit = (item.price - item.cost) * item.quantity;
-
-// // //         const saleDoc = {
-// // //           amount,
-// // //           profit,
-// // //           date: new Date().toISOString().split("T")[0],
-// // //           timestamp: Timestamp.now(),
-// // //           medicine_id: item.medicineId,
-// // //           medicine_name: item.medicineName,
-// // //           quantity: item.quantity,
-// // //           cost_price: item.cost,
-// // //           retail_price: item.price,
-// // //         };
-
-// // //         await addDoc(collection(db, "sales"), saleDoc);
-
-// // //         const medicineRef = doc(db, "medicines", item.medicineId);
-// // //         const medicineSnap = await getDoc(medicineRef);
-// // //         if (medicineSnap.exists()) {
-// // //           const currentQty = medicineSnap.data().quantity ?? 0;
-// // //           await updateDoc(medicineRef, {
-// // //             quantity: Math.max(0, currentQty - item.quantity),
-// // //           });
-// // //         }
-// // //       }
-
-// // //       setCart([]);
-// // //       setActivePatient(null);
-
-// // //       if (activePrescriptionId) {
-// // //         try {
-// // //           await deleteDoc(doc(db, "prescriptions", activePrescriptionId));
-// // //           setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-// // //           setActivePrescriptionId(null);
-// // //         } catch (err) {
-// // //           console.error("Failed to delete prescription:", err);
-// // //         }
-// // //       }
-
-// // //       toast({
-// // //         title: "Sale processed",
-// // //         description: "Sale saved and stock updated.",
-// // //         variant: "default",
-// // //       });
-
-// // //       const today = new Date().toISOString().split("T")[0];
-// // //       const q = query(collection(db, "sales"), where("date", "==", today));
-// // //       const snapshot = await getDocs(q);
-// // //       const salesData: Sale[] = snapshot.docs.map((doc) => {
-// // //         const data = doc.data();
-// // //         return {
-// // //           id: doc.id,
-// // //           amount: Number(data.amount ?? 0),
-// // //           profit: Number(data.profit ?? 0),
-// // //           date: data.date ?? "",
-// // //           timestamp: data.timestamp,
-// // //           medicineId: data.medicine_id,
-// // //           medicineName: data.medicine_name,
-// // //           quantity: Number(data.quantity ?? 0),
-// // //           costPrice: Number(data.cost_price ?? 0),
-// // //           retailPrice: Number(data.retail_price ?? 0),
-// // //         };
-// // //       });
-// // //       setTodaysSales(salesData);
-// // //     } catch (err) {
-// // //       console.error("Error processing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to process sale. Check console.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Process sale & print PDF
-// // //   const handleProcessSaleWithPDF = async () => {
-// // //     if (cart.length === 0) return;
-
-// // //     try {
-// // //       // IMPORTANT: Generate PDF FIRST (before cart is cleared)
-// // //       console.log("Generating PDF with cart items:", cart.length);
-// // //       console.log("Patient data:", activePatient);
-
-// // //       await generateSalePDF({
-// // //         cart: cart,
-// // //         patient: activePatient || undefined,
-// // //       });
-
-// // //       console.log("PDF generation completed");
-
-// // //       // Small delay to ensure PDF download starts
-// // //       await new Promise(resolve => setTimeout(resolve, 500));
-
-// // //       // Then process the sale (this clears the cart)
-// // //       await processSale();
-
-// // //       toast({
-// // //         title: "PDF Generated",
-// // //         description: "Receipt PDF has been downloaded successfully.",
-// // //         variant: "default",
-// // //       });
-// // //     } catch (error) {
-// // //       console.error("Error in PDF generation:", error);
-// // //       toast({
-// // //         title: "PDF Error",
-// // //         description: "Failed to generate PDF. Check console for details.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Reverse sale
-// // //   const reverseSale = async (sale: Sale) => {
-// // //     try {
-// // //       const medicineRef = doc(db, "medicines", sale.medicineId);
-// // //       const medicineSnap = await getDoc(medicineRef);
-
-// // //       if (!medicineSnap.exists()) return;
-
-// // //       const currentQty = medicineSnap.data().quantity ?? 0;
-// // //       await updateDoc(medicineRef, {
-// // //         quantity: currentQty + sale.quantity,
-// // //       });
-
-// // //       await deleteDoc(doc(db, "sales", sale.id));
-// // //       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-// // //       toast({
-// // //         title: "Sale reversed",
-// // //         description: "Sale removed and stock updated.",
-// // //         variant: "default",
-// // //       });
-// // //     } catch (err) {
-// // //       console.error("Error reversing sale:", err);
-// // //       toast({
-// // //         title: "Error",
-// // //         description: "Failed to reverse sale.",
-// // //         variant: "destructive",
-// // //       });
-// // //     }
-// // //   };
-
-// // //   // Clear cart
-// // //   const handleReturn = () => {
-// // //     if (cart.length === 0) return;
-// // //     const confirmClear = window.confirm("Remove all medicines from cart?");
-// // //     if (confirmClear) {
-// // //       setCart([]);
-// // //       setActivePrescriptionId(null);
-// // //       setActivePatient(null);
-// // //     }
-// // //   };
-
-// // //   // ------------------ JSX ------------------
-
-// // //   return (
-// // //     <div className="p-6">
-// // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-// // //         {/* Left Side */}
-// // //         <div className="space-y-6">
-// // //           <h1 className="text-3xl font-bold text-foreground">Sales Management</h1>
-
-// // //           {/* Active Patient Info */}
-// // //           {activePatient && (
-// // //             <div className="medical-card p-4 bg-blue-50 dark:bg-blue-950">
-// // //               <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">Active Prescription</h3>
-// // //               <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
-// // //               <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
-// // //               {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
-// // //               {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
-// // //             </div>
-// // //           )}
-
-// // //           {/* Medicine Search */}
-// // //           <div className="medical-card p-4">
-// // //             <h3 className="font-semibold mb-3">Add Medicine to Cart</h3>
-// // //             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-// // //           </div>
-
-// // //           {/* Shopping Cart */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Shopping Cart</h3>
-// // //               <ShoppingCart className="w-5 h-5 text-primary" />
-// // //             </div>
-
-// // //             <div className="p-4">
-// // //               {cart.length > 0 ? (
-// // //                 <>
-// // //                   {cart.map((item) => (
-// // //                     <div
-// // //                       key={item.medicineId}
-// // //                       className="flex flex-col p-3 bg-accent/30 rounded-lg mb-3"
-// // //                     >
-// // //                       <div className="flex items-center justify-between">
-// // //                         <div className="flex-1">
-// // //                           <h4 className="font-medium">{item.medicineName}</h4>
-// // //                           <p className="text-sm text-muted-foreground">
-// // //                             PKR {item.price} each
-// // //                           </p>
-// // //                           {item.dosage && (
-// // //                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-// // //                               <strong>Dosage:</strong> {item.dosage}
-// // //                             </p>
-// // //                           )}
-// // //                           {item.instructions && (
-// // //                             <p className="text-xs text-green-600 dark:text-green-400">
-// // //                               <strong>Instructions:</strong> {item.instructions}
-// // //                             </p>
-// // //                           )}
-// // //                         </div>
-// // //                         <div className="flex items-center space-x-2">
-// // //                           <Button
-// // //                             variant="outline"
-// // //                             size="sm"
-// // //                             onClick={() =>
-// // //                               updateQuantity(item.medicineId, item.quantity - 1)
-// // //                             }
-// // //                           >
-// // //                             <Minus className="w-3 h-3" />
-// // //                           </Button>
-// // //                           <span className="w-8 text-center">{item.quantity}</span>
-// // //                           <Button
-// // //                             variant="outline"
-// // //                             size="sm"
-// // //                             onClick={() =>
-// // //                               updateQuantity(item.medicineId, item.quantity + 1)
-// // //                             }
-// // //                           >
-// // //                             <Plus className="w-3 h-3" />
-// // //                           </Button>
-// // //                         </div>
-// // //                         <div className="text-right ml-4">
-// // //                           <p className="font-medium">
-// // //                             PKR {(item.price * item.quantity).toFixed(2)}
-// // //                           </p>
-// // //                         </div>
-// // //                       </div>
-// // //                     </div>
-// // //                   ))}
-
-// // //                   <div className="border-t pt-3 mt-4">
-// // //                     <div className="flex justify-between mb-2">
-// // //                       <span>Subtotal:</span>
-// // //                       <span>PKR {getTotalAmount().toFixed(2)}</span>
-// // //                     </div>
-// // //                     <div className="flex justify-between mb-4">
-// // //                       <span>Profit:</span>
-// // //                       <span className="text-success">
-// // //                         PKR {getTotalProfit().toFixed(2)}
-// // //                       </span>
-// // //                     </div>
-
-// // //                     {/* Conditional buttons */}
-// // //                     {activePrescriptionId ? (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button
-// // //                           onClick={handleProcessSaleWithPDF}
-// // //                           className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
-// // //                         >
-// // //                           <FileDown className="w-4 h-4" /> Process & Print PDF
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     ) : (
-// // //                       <div className="flex space-x-3">
-// // //                         <Button onClick={processSale} className="flex-1 gap-2">
-// // //                           <Receipt className="w-4 h-4" /> Process Sale
-// // //                         </Button>
-// // //                         <Button variant="outline" onClick={handleReturn}>
-// // //                           <RotateCcw className="w-4 h-4" /> Return
-// // //                         </Button>
-// // //                       </div>
-// // //                     )}
-// // //                   </div>
-// // //                 </>
-// // //               ) : (
-// // //                 <div className="text-center py-8">
-// // //                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-// // //                   <p>Your cart is empty</p>
-// // //                 </div>
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-
-// // //         {/* Right Side */}
-// // //         <div className="space-y-6">
-// // //           <h2 className="text-2xl font-bold">Today's Sales Summary</h2>
-
-// // //           <div className="grid grid-cols-2 gap-4">
-// // //             <div className="stats-card-primary p-4">
-// // //               <p>Total Sales</p>
-// // //               <h3 className="text-xl font-bold">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.amount ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //             <div className="stats-card-success p-4">
-// // //               <p>Total Profit</p>
-// // //               <h3 className="text-xl font-bold text-success">
-// // //                 PKR{" "}
-// // //                 {todaysSales
-// // //                   .reduce((sum, s) => sum + (s.profit ?? 0), 0)
-// // //                   .toFixed(2)}
-// // //               </h3>
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Prescriptions */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b flex justify-between">
-// // //               <h3 className="font-semibold">Prescriptions</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-// // //               {prescriptions.length === 0 ? (
-// // //                 <p>No prescriptions found.</p>
-// // //               ) : (
-// // //                 prescriptions.map((pres) => (
-// // //                   <div
-// // //                     key={pres.id}
-// // //                     className="p-3 bg-accent/20 rounded-lg flex justify-between"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">
-// // //                         {pres.patient?.name ?? "Unknown Patient"}
-// // //                       </p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         Doctor: {pres.patient?.referringDoctor ?? "-"} • PKR{" "}
-// // //                         {(pres.totalRetail ?? 0).toFixed(2)}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       onClick={() => {
-// // //                         if (!pres.prescription || pres.prescription.length === 0) {
-// // //                           toast({
-// // //                             title: "Empty prescription",
-// // //                             description: "This prescription has no medicines.",
-// // //                             variant: "destructive",
-// // //                           });
-// // //                           return;
-// // //                         }
-// // //                         addMultipleToCart(pres.prescription);
-// // //                         setActivePrescriptionId(pres.id);
-// // //                         setActivePatient(pres.patient || null);
-// // //                         toast({
-// // //                           title: "Prescription loaded",
-// // //                           description: "All medicines added to cart.",
-// // //                         });
-// // //                       }}
-// // //                     >
-// // //                       Add to Cart
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-
-// // //           {/* Recent Sales */}
-// // //           <div className="medical-card">
-// // //             <div className="p-4 border-b">
-// // //               <h3 className="font-semibold">Recent Sales</h3>
-// // //             </div>
-// // //             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-// // //               {todaysSales.length === 0 ? (
-// // //                 <p>No sales yet today.</p>
-// // //               ) : (
-// // //                 todaysSales.map((s) => (
-// // //                   <div
-// // //                     key={s.id}
-// // //                     className="flex justify-between items-center p-2 bg-accent/30 rounded-lg"
-// // //                   >
-// // //                     <div>
-// // //                       <p className="font-medium">{s.medicineName}</p>
-// // //                       <p className="text-sm text-muted-foreground">
-// // //                         {s.quantity} × PKR {s.retailPrice} = PKR {s.amount}
-// // //                       </p>
-// // //                     </div>
-// // //                     <Button
-// // //                       size="sm"
-// // //                       variant="destructive"
-// // //                       onClick={() => reverseSale(s)}
-// // //                     >
-// // //                       Reverse
-// // //                     </Button>
-// // //                   </div>
-// // //                 ))
-// // //               )}
-// // //             </div>
-// // //           </div>
-// // //         </div>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // }
-
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import {
-//   ShoppingCart,
-//   Plus,
-//   Minus,
-//   Receipt,
-//   RotateCcw,
-//   FileDown,
-//   History,
-//   X,
-//   Search,
-// } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { SearchBar } from "@/components/SearchBar";
-// import { Input } from "@/components/ui/input";
-// import { db } from "@/firebase";
-// import {
-//   collection,
-//   addDoc,
-//   getDocs,
-//   query,
-//   where,
-//   Timestamp,
-//   doc,
-//   updateDoc,
-//   deleteDoc,
-//   getDoc,
-//   DocumentData,
-//   QueryDocumentSnapshot,
-//   orderBy,
-//   limit,
-// } from "firebase/firestore";
-// import { useToast } from "@/hooks/use-toast";
-// import generateSalePDF from "@/components/SalePDF";
-
-// // ------------------ TYPES ------------------
-
-// export interface Medicine {
-//   id: string;
-//   name: string;
-//   costPrice: number;
-//   retailPrice: number;
-//   quantity: number;
-//   createdAt?: Timestamp;
-//   updatedAt?: Timestamp;
-// }
-
-// export interface CartItem {
-//   medicineId: string;
-//   medicineName: string;
-//   quantity: number;
-//   price: number;
-//   cost: number;
-//   medicine: Medicine;
-//   dosage?: string;
-//   instructions?: string;
-// }
-
-// interface Sale {
-//   id: string;
-//   amount: number;
-//   profit: number;
-//   date: string;
-//   timestamp: Timestamp;
-//   medicineId: string;
-//   medicineName: string;
-//   quantity: number;
-//   costPrice: number;
-//   retailPrice: number;
-// }
-
-// interface PatientData {
-//   name?: string;
-//   referringDoctor?: string;
-//   age?: string;
-//   gender?: string;
-//   phone?: string;
-//   [k: string]: any;
-// }
-
-// interface PrescriptionDoc {
-//   id: string;
-//   patient?: PatientData;
-//   prescription?: Array<{
-//     id?: string;
-//     name?: string;
-//     qty?: number;
-//     retail_price?: number;
-//     cost_price?: number;
-//     dosage?: string;
-//     instructions?: string;
-//     [k: string]: any;
-//   }>;
-//   totalItems?: number;
-//   totalRetail?: number;
-//   timestamp?: string | any;
-//   processed?: boolean;
-//   processedAt?: Timestamp;
-// }
-
-// // ------------------ COMPONENT ------------------
-
-// export default function Sales() {
-//   const [cart, setCart] = useState<CartItem[]>([]);
-//   const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-//   const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-//   const [activePatient, setActivePatient] = useState<PatientData | null>(null);
-//   const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-//   const [historyOpen, setHistoryOpen] = useState(false);
-//   const [historyPrescriptions, setHistoryPrescriptions] = useState<PrescriptionDoc[]>([]);
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const { toast } = useToast();
-
-//   // Fetch today's sales
-//   useEffect(() => {
-//     const fetchSales = async () => {
-//       try {
-//         const today = new Date().toISOString().split("T")[0];
-//         const q = query(collection(db, "sales"), where("date", "==", today));
-//         const snapshot = await getDocs(q);
-
-//         const salesData: Sale[] = snapshot.docs.map(
-//           (doc: QueryDocumentSnapshot<DocumentData>) => {
-//             const data = doc.data();
-//             let timestamp: Timestamp;
-//             if (data.timestamp && typeof data.timestamp.toDate === "function") {
-//               timestamp = data.timestamp;
-//             } else if (data.timestamp) {
-//               timestamp = Timestamp.fromDate(new Date(data.timestamp));
-//             } else {
-//               timestamp = Timestamp.now();
-//             }
-//             return {
-//               id: doc.id,
-//               amount: Number(data.amount ?? 0),
-//               profit: Number(data.profit ?? 0),
-//               date: data.date ?? "",
-//               timestamp,
-//               medicineId: data.medicine_id,
-//               medicineName: data.medicine_name,
-//               quantity: Number(data.quantity ?? 0),
-//               costPrice: Number(data.cost_price ?? 0),
-//               retailPrice: Number(data.retail_price ?? 0),
-//             };
-//           }
-//         );
-//         setTodaysSales(salesData);
-//       } catch (err) {
-//         console.error("Error fetching today's sales:", err);
-//       }
-//     };
-//     fetchSales();
-//   }, []);
-
-//   // Fetch active prescriptions (not processed)
-//   useEffect(() => {
-//     const fetchPrescriptions = async () => {
-//       try {
-//         const q = query(
-//           collection(db, "prescriptions"),
-//           orderBy("timestamp", "desc"),
-//           limit(50)
-//         );
-//         const snap = await getDocs(q);
-//         const docs: PrescriptionDoc[] = snap.docs
-//           .map((d) => {
-//             const data = d.data();
-//             return {
-//               id: d.id,
-//               patient: data.patient,
-//               prescription: data.prescription || data.prescribed || [],
-//               totalItems: data.totalItems,
-//               totalRetail: data.totalRetail,
-//               timestamp: data.timestamp,
-//               processed: data.processed || false,
-//               processedAt: data.processedAt,
-//             };
-//           })
-//           .filter((doc) => !doc.processed);
-//         setPrescriptions(docs);
-//       } catch (err) {
-//         console.error("Error fetching prescriptions:", err);
-//       }
-//     };
-//     fetchPrescriptions();
-//   }, []);
-
-//   // Fetch all prescriptions for history
-//   useEffect(() => {
-//     const fetchAllPrescriptions = async () => {
-//       try {
-//         const q = query(
-//           collection(db, "prescriptions"),
-//           orderBy("timestamp", "desc"),
-//           limit(200)
-//         );
-//         const snap = await getDocs(q);
-//         const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-//           const data = d.data();
-//           return {
-//             id: d.id,
-//             patient: data.patient,
-//             prescription: data.prescription || data.prescribed || [],
-//             totalItems: data.totalItems,
-//             totalRetail: data.totalRetail,
-//             timestamp: data.timestamp,
-//             processed: data.processed || false,
-//             processedAt: data.processedAt,
-//           };
-//         });
-//         setHistoryPrescriptions(docs);
-//       } catch (err) {
-//         console.error("Error fetching history prescriptions:", err);
-//       }
-//     };
-//     if (historyOpen) {
-//       fetchAllPrescriptions();
-//     }
-//   }, [historyOpen]);
-
-//   // Filter history prescriptions by search query
-//   const filteredHistory = historyPrescriptions.filter((pres) => {
-//     const patientName = pres.patient?.name?.toLowerCase() || "";
-//     const doctorName = pres.patient?.referringDoctor?.toLowerCase() || "";
-//     const search = searchQuery.toLowerCase();
-//     return patientName.includes(search) || doctorName.includes(search);
-//   });
-
-//   // Add single medicine
-//   const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
-//     const normalizedMedicine: Medicine = {
-//       id: medicine.id,
-//       name: medicine.name,
-//       costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-//       retailPrice: Number(
-//         medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-//       ),
-//       quantity: Number(medicine.quantity ?? 0),
-//       createdAt: medicine.created_at,
-//       updatedAt: medicine.updated_at,
-//     };
-
-//     const existingItem = cart.find(
-//       (item) => item.medicineId === normalizedMedicine.id
-//     );
-//     if (existingItem) {
-//       setCart(
-//         cart.map((item) =>
-//           item.medicineId === normalizedMedicine.id
-//             ? { ...item, quantity: item.quantity + quantity }
-//             : item
-//         )
-//       );
-//     } else {
-//       const newItem: CartItem = {
-//         medicineId: normalizedMedicine.id,
-//         medicineName: normalizedMedicine.name,
-//         quantity,
-//         price: normalizedMedicine.retailPrice,
-//         cost: normalizedMedicine.costPrice,
-//         medicine: normalizedMedicine,
-//         dosage: dosage || undefined,
-//         instructions: instructions || undefined,
-//       };
-//       setCart((prev) => [...prev, newItem]);
-//     }
-//   };
-
-//   // Add all medicines from a prescription
-//   const addMultipleToCart = (items: {
-//     id?: string;
-//     name?: string;
-//     qty?: number;
-//     retail_price?: number;
-//     cost_price?: number;
-//     dosage?: string;
-//     instructions?: string;
-//   }[]) => {
-//     for (const it of items) {
-//       const medObj = {
-//         id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-//         name: it.name || "Unnamed",
-//         cost_price: it.cost_price ?? 0,
-//         retail_price: it.retail_price ?? 0,
-//         quantity: it.qty ?? 1,
-//       };
-//       addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
-//     }
-//   };
-
-//   // Update quantity
-//   const updateQuantity = (medicineId: string, newQuantity: number) => {
-//     if (newQuantity <= 0) {
-//       setCart(cart.filter((item) => item.medicineId !== medicineId));
-//     } else {
-//       setCart(
-//         cart.map((item) =>
-//           item.medicineId === medicineId
-//             ? { ...item, quantity: newQuantity }
-//             : item
-//         )
-//       );
-//     }
-//   };
-
-//   // Totals
-//   const getTotalAmount = () =>
-//     cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-//   const getTotalProfit = () =>
-//     cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-
-//   // ------------------ PROCESS SALE ------------------
-//   const processSale = async () => {
-//     if (cart.length === 0) return;
-
-//     try {
-//       for (const item of cart) {
-//         const amount = item.price * item.quantity;
-//         const profit = (item.price - item.cost) * item.quantity;
-
-//         const saleDoc = {
-//           amount,
-//           profit,
-//           date: new Date().toISOString().split("T")[0],
-//           timestamp: Timestamp.now(),
-//           medicine_id: item.medicineId,
-//           medicine_name: item.medicineName,
-//           quantity: item.quantity,
-//           cost_price: item.cost,
-//           retail_price: item.price,
-//         };
-
-//         await addDoc(collection(db, "sales"), saleDoc);
-
-//         const medicineRef = doc(db, "medicines", item.medicineId);
-//         const medicineSnap = await getDoc(medicineRef);
-//         if (medicineSnap.exists()) {
-//           const currentQty = medicineSnap.data().quantity ?? 0;
-//           await updateDoc(medicineRef, {
-//             quantity: Math.max(0, currentQty - item.quantity),
-//           });
-//         }
-//       }
-
-//       setCart([]);
-//       setActivePatient(null);
-
-//       // Mark prescription as processed instead of deleting
-//       if (activePrescriptionId) {
-//         try {
-//           await updateDoc(doc(db, "prescriptions", activePrescriptionId), {
-//             processed: true,
-//             processedAt: Timestamp.now(),
-//           });
-//           setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-//           setActivePrescriptionId(null);
-//         } catch (err) {
-//           console.error("Failed to mark prescription as processed:", err);
-//         }
-//       }
-
-//       toast({
-//         title: "Sale processed",
-//         description: "Sale saved and stock updated.",
-//         variant: "default",
-//       });
-
-//       const today = new Date().toISOString().split("T")[0];
-//       const q = query(collection(db, "sales"), where("date", "==", today));
-//       const snapshot = await getDocs(q);
-//       const salesData: Sale[] = snapshot.docs.map((doc) => {
-//         const data = doc.data();
-//         return {
-//           id: doc.id,
-//           amount: Number(data.amount ?? 0),
-//           profit: Number(data.profit ?? 0),
-//           date: data.date ?? "",
-//           timestamp: data.timestamp,
-//           medicineId: data.medicine_id,
-//           medicineName: data.medicine_name,
-//           quantity: Number(data.quantity ?? 0),
-//           costPrice: Number(data.cost_price ?? 0),
-//           retailPrice: Number(data.retail_price ?? 0),
-//         };
-//       });
-//       setTodaysSales(salesData);
-//     } catch (err) {
-//       console.error("Error processing sale:", err);
-//       toast({
-//         title: "Error",
-//         description: "Failed to process sale. Check console.",
-//         variant: "destructive",
-//       });
-//     }
-//   };
-
-//   // Process sale & print PDF
-//   const handleProcessSaleWithPDF = async () => {
-//     if (cart.length === 0) return;
-
-//     try {
-//       console.log("Generating PDF with cart items:", cart.length);
-//       console.log("Patient data:", activePatient);
-
-//       await generateSalePDF({
-//         cart: cart,
-//         patient: activePatient || undefined,
-//       });
-
-//       console.log("PDF generation completed");
-
-//       await new Promise(resolve => setTimeout(resolve, 500));
-
-//       await processSale();
-
-//       toast({
-//         title: "PDF Generated",
-//         description: "Receipt PDF has been downloaded successfully.",
-//         variant: "default",
-//       });
-//     } catch (error) {
-//       console.error("Error in PDF generation:", error);
-//       toast({
-//         title: "PDF Error",
-//         description: "Failed to generate PDF. Check console for details.",
-//         variant: "destructive",
-//       });
-//     }
-//   };
-
-//   // Reverse sale
-//   const reverseSale = async (sale: Sale) => {
-//     try {
-//       const medicineRef = doc(db, "medicines", sale.medicineId);
-//       const medicineSnap = await getDoc(medicineRef);
-
-//       if (!medicineSnap.exists()) return;
-
-//       const currentQty = medicineSnap.data().quantity ?? 0;
-//       await updateDoc(medicineRef, {
-//         quantity: currentQty + sale.quantity,
-//       });
-
-//       await deleteDoc(doc(db, "sales", sale.id));
-//       setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-//       toast({
-//         title: "Sale reversed",
-//         description: "Sale removed and stock updated.",
-//         variant: "default",
-//       });
-//     } catch (err) {
-//       console.error("Error reversing sale:", err);
-//       toast({
-//         title: "Error",
-//         description: "Failed to reverse sale.",
-//         variant: "destructive",
-//       });
-//     }
-//   };
-
-//   // Clear cart
-//   const handleReturn = () => {
-//     if (cart.length === 0) return;
-//     const confirmClear = window.confirm("Remove all medicines from cart?");
-//     if (confirmClear) {
-//       setCart([]);
-//       setActivePrescriptionId(null);
-//       setActivePatient(null);
-//     }
-//   };
-
-//   // Load prescription from history
-//   const loadFromHistory = (pres: PrescriptionDoc) => {
-//     if (!pres.prescription || pres.prescription.length === 0) {
-//       toast({
-//         title: "Empty prescription",
-//         description: "This prescription has no medicines.",
-//         variant: "destructive",
-//       });
-//       return;
-//     }
-//     addMultipleToCart(pres.prescription);
-//     setActivePatient(pres.patient || null);
-//     setHistoryOpen(false);
-//     toast({
-//       title: "Prescription loaded",
-//       description: "Medicines added to cart from history.",
-//     });
-//   };
-
-//   // ------------------ JSX ------------------
-
-//   return (
-//     <div className="p-6 relative">
-//       {/* History Button */}
-//       <Button
-//         onClick={() => setHistoryOpen(true)}
-//         className="fixed top-20 right-6 z-40 gap-2"
-//         variant="outline"
-//       >
-//         <History className="w-4 h-4" />
-//         History
-//       </Button>
-
-//       {/* History Sidebar */}
-//       {historyOpen && (
-//         <>
-//           {/* Overlay */}
-//           <div
-//             className="fixed inset-0 bg-black/50 z-40"
-//             onClick={() => setHistoryOpen(false)}
-//           />
-
-//           {/* Sidebar */}
-//           <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-background shadow-2xl z-50 overflow-y-auto">
-//             <div className="p-6">
-//               <div className="flex justify-between items-center mb-6">
-//                 <h2 className="text-2xl font-bold">Prescription History</h2>
-//                 <Button
-//                   variant="ghost"
-//                   size="sm"
-//                   onClick={() => setHistoryOpen(false)}
-//                 >
-//                   <X className="w-5 h-5" />
-//                 </Button>
-//               </div>
-
-//               {/* Search Bar */}
-//               <div className="relative mb-6">
-//                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-//                 <Input
-//                   type="text"
-//                   placeholder="Search by patient or doctor name..."
-//                   value={searchQuery}
-//                   onChange={(e) => setSearchQuery(e.target.value)}
-//                   className="pl-10"
-//                 />
-//               </div>
-
-//               {/* History List */}
-//               <div className="space-y-4">
-//                 {filteredHistory.length === 0 ? (
-//                   <p className="text-muted-foreground text-center py-8">
-//                     {searchQuery ? "No results found." : "No prescription history."}
-//                   </p>
-//                 ) : (
-//                   filteredHistory.map((pres) => (
-//                     <div
-//                       key={pres.id}
-//                       className={`medical-card p-4 ${
-//                         pres.processed ? "bg-green-50 dark:bg-green-950/20" : ""
-//                       }`}
-//                     >
-//                       <div className="flex justify-between items-start mb-3">
-//                         <div>
-//                           <p className="font-semibold text-lg">
-//                             {pres.patient?.name ?? "Unknown Patient"}
-//                           </p>
-//                           <p className="text-sm text-muted-foreground">
-//                             Dr. {pres.patient?.referringDoctor ?? "-"}
-//                           </p>
-//                           {pres.patient?.age && (
-//                             <p className="text-xs text-muted-foreground">
-//                               Age: {pres.patient.age} {pres.patient.gender && `• ${pres.patient.gender}`}
-//                             </p>
-//                           )}
-//                         </div>
-//                         {pres.processed && (
-//                           <span className="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded">
-//                             Processed
-//                           </span>
-//                         )}
-//                       </div>
-
-//                       <div className="mb-3 max-h-40 overflow-y-auto">
-//                         <p className="text-sm font-medium mb-2">Medicines:</p>
-//                         {pres.prescription && pres.prescription.length > 0 ? (
-//                           <ul className="text-sm space-y-1">
-//                             {pres.prescription.map((med, idx) => (
-//                               <li key={idx} className="text-muted-foreground">
-//                                 • {med.name} ({med.qty}x) - PKR {med.retail_price}
-//                                 {med.dosage && (
-//                                   <span className="text-xs block ml-4 text-blue-600">
-//                                     {med.dosage}
-//                                   </span>
-//                                 )}
-//                               </li>
-//                             ))}
-//                           </ul>
-//                         ) : (
-//                           <p className="text-sm text-muted-foreground">No medicines</p>
-//                         )}
-//                       </div>
-
-//                       <div className="flex justify-between items-center pt-3 border-t">
-//                         <div>
-//                           <p className="text-sm text-muted-foreground">
-//                             Total: PKR {(pres.totalRetail ?? 0).toFixed(2)}
-//                           </p>
-//                           {pres.processedAt && (
-//                             <p className="text-xs text-muted-foreground">
-//                               Processed: {pres.processedAt.toDate().toLocaleDateString()}
-//                             </p>
-//                           )}
-//                         </div>
-//                         <Button
-//                           size="sm"
-//                           onClick={() => loadFromHistory(pres)}
-//                           variant="outline"
-//                         >
-//                           Load to Cart
-//                         </Button>
-//                       </div>
-//                     </div>
-//                   ))
-//               <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
-//               <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
-//               {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
-//               {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
-//             </div>
-//           )}
-
-//           {/* Medicine Search */}
-//           <div className="medical-card p-4">
-//             <h3 className="font-semibold mb-3">Add Medicine to Cart</h3>
-//             <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-//           </div>
-
-//           {/* Shopping Cart */}
-//           <div className="medical-card">
-//             <div className="p-4 border-b flex justify-between">
-//               <h3 className="font-semibold">Shopping Cart</h3>
-//               <ShoppingCart className="w-5 h-5 text-primary" />
-//             </div>
-
-//             <div className="p-4">
-//               {cart.length > 0 ? (
-//                 <>
-//                   {cart.map((item) => (
-//                     <div
-//                       key={item.medicineId}
-//                       className="flex flex-col p-3 bg-accent/30 rounded-lg mb-3"
-//                     >
-//                       <div className="flex items-center justify-between">
-//                         <div className="flex-1">
-//                           <h4 className="font-medium">{item.medicineName}</h4>
-//                           <p className="text-sm text-muted-foreground">
-//                             PKR {item.price} each
-//                           </p>
-//                           {item.dosage && (
-//                             <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-//                               <strong>Dosage:</strong> {item.dosage}
-//                             </p>
-//                           )}
-//                           {item.instructions && (
-//                             <p className="text-xs text-green-600 dark:text-green-400">
-//                               <strong>Instructions:</strong> {item.instructions}
-//                             </p>
-//                           )}
-//                         </div>
-//                         <div className="flex items-center space-x-2">
-//                           <Button
-//                             variant="outline"
-//                             size="sm"
-//                             onClick={() =>
-//                               updateQuantity(item.medicineId, item.quantity - 1)
-//                             }
-//                           >
-//                             <Minus className="w-3 h-3" />
-//                           </Button>
-//                           <span className="w-8 text-center">{item.quantity}</span>
-//                           <Button
-//                             variant="outline"
-//                             size="sm"
-//                             onClick={() =>
-//                               updateQuantity(item.medicineId, item.quantity + 1)
-//                             }
-//                           >
-//                             <Plus className="w-3 h-3" />
-//                           </Button>
-//                         </div>
-//                         <div className="text-right ml-4">
-//                           <p className="font-medium">
-//                             PKR {(item.price * item.quantity).toFixed(2)}
-//                           </p>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   ))}
-
-//                   <div className="border-t pt-3 mt-4">
-//                     <div className="flex justify-between mb-2">
-//                       <span>Subtotal:</span>
-//                       <span>PKR {getTotalAmount().toFixed(2)}</span>
-//                     </div>
-//                     <div className="flex justify-between mb-4">
-//                       <span>Profit:</span>
-//                       <span className="text-success">
-//                         PKR {getTotalProfit().toFixed(2)}
-//                       </span>
-//                     </div>
-
-//                     {activePrescriptionId ? (
-//                       <div className="flex space-x-3">
-//                         <Button onClick={processSale} className="flex-1 gap-2">
-//                           <Receipt className="w-4 h-4" /> Process Sale
-//                         </Button>
-//                         <Button
-//                           onClick={handleProcessSaleWithPDF}
-//                           className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
-//                         >
-//                           <FileDown className="w-4 h-4" /> Process & Print PDF
-//                         </Button>
-//                         <Button variant="outline" onClick={handleReturn}>
-//                           <RotateCcw className="w-4 h-4" /> Return
-//                         </Button>
-//                       </div>
-//                     ) : (
-//                       <div className="flex space-x-3">
-//                         <Button onClick={processSale} className="flex-1 gap-2">
-//                           <Receipt className="w-4 h-4" /> Process Sale
-//                         </Button>
-//                         <Button variant="outline" onClick={handleReturn}>
-//                           <RotateCcw className="w-4 h-4" /> Return
-//                         </Button>
-//                       </div>
-//                     )}
-//                   </div>
-//                 </>
-//               ) : (
-//                 <div className="text-center py-8">
-//                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-//                   <p>Your cart is empty</p>
-//                 </div>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Right Side */}
-//         <div className="space-y-6">
-//           <h2 className="text-2xl font-bold">Today's Sales Summary</h2>
-
-//           <div className="grid grid-cols-2 gap-4">
-//             <div className="stats-card-primary p-4">
-//               <p>Total Sales</p>
-//               <h3 className="text-xl font-bold">
-//                 PKR{" "}
-//                 {todaysSales
-//                   .reduce((sum, s) => sum + (s.amount ?? 0), 0)
-//                   .toFixed(2)}
-//               </h3>
-//             </div>
-//             <div className="stats-card-success p-4">
-//               <p>Total Profit</p>
-//               <h3 className="text-xl font-bold text-success">
-//                 PKR{" "}
-//                 {todaysSales
-//                   .reduce((sum, s) => sum + (s.profit ?? 0), 0)
-//                   .toFixed(2)}
-//               </h3>
-//             </div>
-//           </div>
-
-//           {/* Prescriptions */}
-//           <div className="medical-card">
-//             <div className="p-4 border-b flex justify-between">
-//               <h3 className="font-semibold">Prescriptions</h3>
-//             </div>
-//             <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-//               {prescriptions.length === 0 ? (
-//                 <p>No prescriptions found.</p>
-//               ) : (
-//                 prescriptions.map((pres) => (
-//                   <div
-//                     key={pres.id}
-//                     className="p-3 bg-accent/20 rounded-lg flex justify-between"
-//                   >
-//                     <div>
-//                       <p className="font-medium">
-//                         {pres.patient?.name ?? "Unknown Patient"}
-//                       </p>
-//                       <p className="text-sm text-muted-foreground">
-//                         Doctor: {pres.patient?.referringDoctor ?? "-"} • PKR{" "}
-//                         {(pres.totalRetail ?? 0).toFixed(2)}
-//                       </p>
-//                     </div>
-//                     <Button
-//                       size="sm"
-//                       onClick={() => {
-//                         if (!pres.prescription || pres.prescription.length === 0) {
-//                           toast({
-//                             title: "Empty prescription",
-//                             description: "This prescription has no medicines.",
-//                             variant: "destructive",
-//                           });
-//                           return;
-//                         }
-//                         addMultipleToCart(pres.prescription);
-//                         setActivePrescriptionId(pres.id);
-//                         setActivePatient(pres.patient || null);
-//                         toast({
-//                           title: "Prescription loaded",
-//                           description: "All medicines added to cart.",
-//                         });
-//                       }}
-//                     >
-//                       Add to Cart
-//                     </Button>
-//                   </div>
-//                 ))
-//               )}
-//             </div>
-//           </div>    
-
-//          {/* Recent Sales */}
-//          <div className="medical-card">
-//             <div className="p-4 border-b">
-//               <h3 className="font-semibold">Recent Sales</h3>
-//             </div>
-//             <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-//               {todaysSales.length === 0 ? (
-//                 <p>No sales yet today.</p>
-//               ) : (
-//                 todaysSales.map((s) => (
-//                   <div
-//                     key={s.id}
-//                     className="flex justify-between items-center p-2 bg-accent/30 rounded-lg"
-//                   >
-//                     <div>
-//                       <p className="font-medium">{s.medicineName}</p>
-//                       <p className="text-sm text-muted-foreground">
-//                         {s.quantity} × PKR {s.retailPrice} = PKR {s.amount}
-//                       </p>
-//                     </div>
-//                     <Button
-//                        size="sm"
-//                        variant="destructive"
-//                        onClick={() => reverseSale(s)}
-//                      >
-//                        Reverse
-//                      </Button>
-//                    </div>
-//                  ))
-//                )}
-//              </div>
-//            </div>
-//          </div>
-//        </div>
-//      </div>
-//   );
-// }
-
-
-"use client";
-
-import { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
-    ShoppingCart,
-    Plus,
-    Minus,
-    Receipt,
-    RotateCcw,
-    FileDown,
-    History,
-    X,
-    Search,
-    Eye,
-    EyeOff,
-    Stethoscope,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Receipt,
+  RotateCcw,
+  Printer,
+  History,
+  X,
+  Search,
+  Stethoscope,
+  User,
+  Phone,
+  FileDown,
+  Trash2,
+  Calendar,
+  AlertCircle,
+  Clock,
+  Sparkles,
+  CheckCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SearchBar } from "@/components/SearchBar";
-import { Input } from "@/components/ui/input";
-import { db } from "@/firebase";
-import {
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    where,
-    Timestamp,
-    doc,
-    updateDoc,
-    deleteDoc,
-    getDoc,
-    DocumentData,
-    QueryDocumentSnapshot,
-    orderBy,
-    limit,
-} from "firebase/firestore";
-import { useToast } from "@/hooks/use-toast";
-import generateSalePDF from "@/components/SalePDF";
+import { usePharmacy } from "../context/PharmacyContext";
+import { CartItem, PatientInfo, Prescription, SaleRecord } from "../types/medical";
+import { formatPKR, formatNumber } from "../lib/utils";
+import { generateSalePDF } from "../components/SalePDF";
+import { toast } from "sonner";
 
-// ------------------ TYPES ------------------
+export const Sales: React.FC = () => {
+  const {
+    medicines,
+    sales,
+    prescriptions,
+    processSale,
+    reverseSale,
+    privacyMode,
+    togglePrivacyMode,
+  } = usePharmacy();
 
-export interface Medicine {
-    id: string;
-    name: string;
-    costPrice: number;
-    retailPrice: number;
-    quantity: number;
-    createdAt?: Timestamp;
-    updatedAt?: Timestamp;
-}
+  // POS State
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [doctorFee, setDoctorFee] = useState<number>(0);
+  const [activePatient, setActivePatient] = useState<PatientInfo | null>(null);
+  const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
 
-export interface CartItem {
-    medicineId: string;
-    medicineName: string;
-    quantity: number;
-    price: number;
-    cost: number;
-    medicine: Medicine;
-    dosage?: string;
-    instructions?: string;
-}
+  // Search input in POS
+  const [medSearchQuery, setMedSearchQuery] = useState("");
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
-interface Sale {
-    id: string;
-    amount: number;
-    profit: number;
-    date: string;
-    timestamp: Timestamp;
-    medicineId: string;
-    medicineName: string;
-    quantity: number;
-    costPrice: number;
-    retailPrice: number;
-    doctorFee?: number;
-}
+  // History Drawer
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
 
-interface PatientData {
-    name?: string;
-    referringDoctor?: string;
-    age?: string;
-    gender?: string;
-    phone?: string;
-    [k: string]: any;
-}
+  const todayStr = new Date().toISOString().split("T")[0];
 
-interface PrescriptionDoc {
-    id: string;
-    patient?: PatientData;
-    prescription?: Array<{
-        id?: string;
-        name?: string;
-        qty?: number;
-        retail_price?: number;
-        cost_price?: number;
-        dosage?: string;
-        instructions?: string;
-        [k: string]: any;
-    }>;
-    totalItems?: number;
-    totalRetail?: number;
-    timestamp?: string | any;
-    processed?: boolean;
-    processedAt?: Timestamp;
-}
+  // Today's Sales Calculation
+  const todaysSales = useMemo(() => {
+    return sales.filter((s) => s.date === todayStr);
+  }, [sales, todayStr]);
 
-// ------------------ COMPONENT ------------------
+  const todaysMedicineSales = todaysSales
+    .filter((s) => s.medicine_id !== "DOCTOR_FEE")
+    .reduce((sum, s) => sum + s.amount, 0);
 
-export default function Sales() {
-    const [cart, setCart] = useState<CartItem[]>([]);
-    const [todaysSales, setTodaysSales] = useState<Sale[]>([]);
-    const [activePrescriptionId, setActivePrescriptionId] = useState<string | null>(null);
-    const [activePatient, setActivePatient] = useState<PatientData | null>(null);
-    const [prescriptions, setPrescriptions] = useState<PrescriptionDoc[]>([]);
-    const [historyOpen, setHistoryOpen] = useState(false);
-    const [historyPrescriptions, setHistoryPrescriptions] = useState<PrescriptionDoc[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isRevealed, setIsRevealed] = useState(true);
-    const [doctorFee, setDoctorFee] = useState<number>(0);
-    const [todaysDoctorFees, setTodaysDoctorFees] = useState<number>(0);
-    const { toast } = useToast();
+  const todaysProfit = todaysSales
+    .filter((s) => s.medicine_id !== "DOCTOR_FEE")
+    .reduce((sum, s) => sum + s.profit, 0);
 
-    // Fetch today's sales
-    useEffect(() => {
-        const fetchSales = async () => {
-            try {
-                const today = new Date().toISOString().split("T")[0];
-                const q = query(collection(db, "sales"), where("date", "==", today));
-                const snapshot = await getDocs(q);
+  const todaysDoctorFees = todaysSales
+    .filter((s) => s.medicine_id === "DOCTOR_FEE")
+    .reduce((sum, s) => sum + (s.doctor_fee || s.amount), 0);
 
-                const salesData: Sale[] = snapshot.docs.map(
-                    (doc: QueryDocumentSnapshot<DocumentData>) => {
-                        const data = doc.data();
-                        let timestamp: Timestamp;
-                        if (data.timestamp && typeof data.timestamp.toDate === "function") {
-                            timestamp = data.timestamp;
-                        } else if (data.timestamp) {
-                            timestamp = Timestamp.fromDate(new Date(data.timestamp));
-                        } else {
-                            timestamp = Timestamp.now();
-                        }
-                        return {
-                            id: doc.id,
-                            amount: Number(data.amount ?? 0),
-                            profit: Number(data.profit ?? 0),
-                            date: data.date ?? "",
-                            timestamp,
-                            medicineId: data.medicine_id,
-                            medicineName: data.medicine_name,
-                            quantity: Number(data.quantity ?? 0),
-                            costPrice: Number(data.cost_price ?? 0),
-                            retailPrice: Number(data.retail_price ?? 0),
-                            doctorFee: Number(data.doctor_fee ?? 0),
-                        };
-                    }
-                );
-                setTodaysSales(salesData);
+  // Cart Calculations
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartProfit = cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
+  const grandTotal = cartSubtotal + doctorFee;
 
-                // Calculate total doctor fees
-                const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-                setTodaysDoctorFees(totalDoctorFees);
-            } catch (err) {
-                console.error("Error fetching today's sales:", err);
-            }
+  // Search Medicine results
+  const searchResults = useMemo(() => {
+    if (!medSearchQuery.trim()) return [];
+    return medicines
+      .filter((m) => m.name.toLowerCase().includes(medSearchQuery.toLowerCase()))
+      .slice(0, 8);
+  }, [medicines, medSearchQuery]);
+
+  // Cart Management
+  const addToCart = (med: any, quantity = 1, dosage?: string, instructions?: string) => {
+    setCart((prev) => {
+      const existingIdx = prev.findIndex((item) => item.medicineId === med.id);
+      if (existingIdx !== -1) {
+        const next = [...prev];
+        next[existingIdx] = {
+          ...next[existingIdx],
+          quantity: next[existingIdx].quantity + quantity,
         };
-        fetchSales();
-    }, []);
-
-    // Fetch active prescriptions (not processed)
-    useEffect(() => {
-        const fetchPrescriptions = async () => {
-            try {
-                const q = query(
-                    collection(db, "prescriptions"),
-                    orderBy("timestamp", "desc"),
-                    limit(50)
-                );
-                const snap = await getDocs(q);
-                const docs: PrescriptionDoc[] = snap.docs
-                    .map((d) => {
-                        const data = d.data();
-                        return {
-                            id: d.id,
-                            patient: data.patient,
-                            prescription: data.prescription || data.prescribed || [],
-                            totalItems: data.totalItems,
-                            totalRetail: data.totalRetail,
-                            timestamp: data.timestamp,
-                            processed: data.processed || false,
-                            processedAt: data.processedAt,
-                        };
-                    })
-                    .filter((doc) => !doc.processed);
-                setPrescriptions(docs);
-            } catch (err) {
-                console.error("Error fetching prescriptions:", err);
-            }
+        return next;
+      } else {
+        const newItem: CartItem = {
+          medicineId: med.id,
+          medicineName: med.name,
+          quantity,
+          price: Number(med.retail_price ?? med.retailPrice ?? med.price ?? 0),
+          cost: Number(med.cost_price ?? med.costPrice ?? med.cost ?? 0),
+          dosage: dosage || "",
+          instructions: instructions || "",
+          currentStock: med.quantity,
         };
-        fetchPrescriptions();
-    }, []);
-
-    // Fetch all prescriptions for history
-    useEffect(() => {
-        const fetchAllPrescriptions = async () => {
-            try {
-                const q = query(
-                    collection(db, "prescriptions"),
-                    orderBy("timestamp", "desc"),
-                    limit(200)
-                );
-                const snap = await getDocs(q);
-                const docs: PrescriptionDoc[] = snap.docs.map((d) => {
-                    const data = d.data();
-                    return {
-                        id: d.id,
-                        patient: data.patient,
-                        prescription: data.prescription || data.prescribed || [],
-                        totalItems: data.totalItems,
-                        totalRetail: data.totalRetail,
-                        timestamp: data.timestamp,
-                        processed: data.processed || false,
-                        processedAt: data.processedAt,
-                    };
-                });
-                setHistoryPrescriptions(docs);
-            } catch (err) {
-                console.error("Error fetching history prescriptions:", err);
-            }
-        };
-        if (historyOpen) {
-            fetchAllPrescriptions();
-        }
-    }, [historyOpen]);
-
-    // Filter history prescriptions by search query
-    const filteredHistory = historyPrescriptions.filter((pres) => {
-        const patientName = pres.patient?.name?.toLowerCase() || "";
-        const doctorName = pres.patient?.referringDoctor?.toLowerCase() || "";
-        const search = searchQuery.toLowerCase();
-        return patientName.includes(search) || doctorName.includes(search);
+        return [...prev, newItem];
+      }
     });
 
-    // Add single medicine
-    const addToCart = (medicine: any, quantity: number = 1, dosage?: string, instructions?: string) => {
-        const normalizedMedicine: Medicine = {
-            id: medicine.id,
-            name: medicine.name,
-            costPrice: Number(medicine.cost_price ?? medicine.costPrice ?? 0),
-            retailPrice: Number(
-                medicine.retail_price ?? medicine.retailPrice ?? medicine.price ?? 0
-            ),
-            quantity: Number(medicine.quantity ?? 0),
-            createdAt: medicine.created_at,
-            updatedAt: medicine.updated_at,
-        };
+    setMedSearchQuery("");
+    setShowSearchDropdown(false);
+  };
 
-        const existingItem = cart.find(
-            (item) => item.medicineId === normalizedMedicine.id
+  const updateCartQuantity = (medicineId: string, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.medicineId === medicineId) {
+            const nextQty = item.quantity + delta;
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean) as CartItem[]
+    );
+  };
+
+  const removeFromCart = (medicineId: string) => {
+    setCart((prev) => prev.filter((item) => item.medicineId !== medicineId));
+  };
+
+  const clearCart = () => {
+    if (cart.length === 0 && doctorFee === 0) return;
+    if (window.confirm("Clear all medicines and consultation fees from current sale?")) {
+      setCart([]);
+      setDoctorFee(0);
+      setActivePatient(null);
+      setActivePrescriptionId(null);
+    }
+  };
+
+  // Load Prescription
+  const loadPrescriptionToCart = (rx: Prescription) => {
+    if (!rx.prescription || rx.prescription.length === 0) {
+      toast.error("This prescription has no medicine items");
+      return;
+    }
+
+    setCart([]);
+    rx.prescription.forEach((it) => {
+      addToCart(
+        {
+          id: it.id || `rx-item-${Math.random()}`,
+          name: it.name,
+          retail_price: it.retail_price || 0,
+          cost_price: it.cost_price || 0,
+          quantity: it.qty || 1,
+        },
+        it.qty || 1,
+        it.dosage,
+        it.instructions
+      );
+    });
+
+    setActivePatient(rx.patient || null);
+    setActivePrescriptionId(rx.id);
+    setHistoryDrawerOpen(false);
+
+    toast.success(`Prescription for ${rx.patient?.name || "Patient"} loaded to cart.`);
+  };
+
+  // Handle Checkout
+  const handleCheckout = async (withPDF: boolean) => {
+    if (cart.length === 0 && doctorFee <= 0) {
+      toast.error("Add medicines or consultation fee to process sale");
+      return;
+    }
+
+    // Check if stock is sufficient
+    for (const item of cart) {
+      const match = medicines.find((m) => m.id === item.medicineId);
+      if (match && item.quantity > match.quantity) {
+        toast.warning(
+          `Stock warning: ${item.medicineName} only has ${match.quantity} in stock (requested ${item.quantity}).`
         );
-        if (existingItem) {
-            setCart(
-                cart.map((item) =>
-                    item.medicineId === normalizedMedicine.id
-                        ? { ...item, quantity: item.quantity + quantity }
-                        : item
-                )
-            );
-        } else {
-            const newItem: CartItem = {
-                medicineId: normalizedMedicine.id,
-                medicineName: normalizedMedicine.name,
-                quantity,
-                price: normalizedMedicine.retailPrice,
-                cost: normalizedMedicine.costPrice,
-                medicine: normalizedMedicine,
-                dosage: dosage || undefined,
-                instructions: instructions || undefined,
-            };
-            setCart((prev) => [...prev, newItem]);
-        }
-    };
+      }
+    }
 
-    // Add all medicines from a prescription
-    const addMultipleToCart = (items: {
-        id?: string;
-        name?: string;
-        qty?: number;
-        retail_price?: number;
-        cost_price?: number;
-        dosage?: string;
-        instructions?: string;
-    }[]) => {
-        for (const it of items) {
-            const medObj = {
-                id: it.id || `${it.name}-${Math.random().toString(36).slice(2, 8)}`,
-                name: it.name || "Unnamed",
-                cost_price: it.cost_price ?? 0,
-                retail_price: it.retail_price ?? 0,
-                quantity: it.qty ?? 1,
-            };
-            addToCart(medObj, medObj.quantity, it.dosage, it.instructions);
-        }
-    };
-
-    // Update quantity
-    const updateQuantity = (medicineId: string, newQuantity: number) => {
-        if (newQuantity <= 0) {
-            setCart(cart.filter((item) => item.medicineId !== medicineId));
-        } else {
-            setCart(
-                cart.map((item) =>
-                    item.medicineId === medicineId
-                        ? { ...item, quantity: newQuantity }
-                        : item
-                )
-            );
-        }
-    };
-
-    // Totals
-    const getTotalAmount = () =>
-        cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const getTotalProfit = () =>
-        cart.reduce((sum, item) => sum + (item.price - item.cost) * item.quantity, 0);
-    const getGrandTotal = () => getTotalAmount() + doctorFee;
-
-    // ------------------ PROCESS SALE ------------------
-    const processSale = async () => {
-        // Allow processing even if cart is empty but doctor fee exists
-        if (cart.length === 0 && doctorFee === 0) {
-            toast({
-                title: "Empty Sale",
-                description: "Add medicines or enter doctor fee to process sale.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        try {
-            // Process medicines if any
-            for (const item of cart) {
-                const amount = item.price * item.quantity;
-                const profit = (item.price - item.cost) * item.quantity;
-
-                const saleDoc = {
-                    amount,
-                    profit,
-                    date: new Date().toISOString().split("T")[0],
-                    timestamp: Timestamp.now(),
-                    medicine_id: item.medicineId,
-                    medicine_name: item.medicineName,
-                    quantity: item.quantity,
-                    cost_price: item.cost,
-                    retail_price: item.price,
-                    doctor_fee: 0,
-                };
-
-                await addDoc(collection(db, "sales"), saleDoc);
-
-                const medicineRef = doc(db, "medicines", item.medicineId);
-                const medicineSnap = await getDoc(medicineRef);
-                if (medicineSnap.exists()) {
-                    const currentQty = medicineSnap.data().quantity ?? 0;
-                    await updateDoc(medicineRef, {
-                        quantity: Math.max(0, currentQty - item.quantity),
-                    });
-                }
-            }
-
-            // Process doctor fee separately if it exists
-            if (doctorFee > 0) {
-                const doctorFeeSaleDoc = {
-                    amount: doctorFee,
-                    profit: doctorFee,
-                    date: new Date().toISOString().split("T")[0],
-                    timestamp: Timestamp.now(),
-                    medicine_id: "DOCTOR_FEE",
-                    medicine_name: "Doctor Consultation Fee",
-                    quantity: 1,
-                    cost_price: 0,
-                    retail_price: doctorFee,
-                    doctor_fee: doctorFee,
-                };
-
-                await addDoc(collection(db, "sales"), doctorFeeSaleDoc);
-            }
-
-            setCart([]);
-            setDoctorFee(0);
-            setActivePatient(null);
-
-            // Mark prescription as processed
-            if (activePrescriptionId) {
-                try {
-                    await updateDoc(doc(db, "prescriptions", activePrescriptionId), {
-                        processed: true,
-                        processedAt: Timestamp.now(),
-                    });
-                    setPrescriptions((prev) => prev.filter((p) => p.id !== activePrescriptionId));
-                    setActivePrescriptionId(null);
-                } catch (err) {
-                    console.error("Failed to mark prescription as processed:", err);
-                }
-            }
-
-            toast({
-                title: "Sale processed",
-                description: "Sale saved and stock updated.",
-                variant: "default",
-            });
-
-            // Refresh today's sales
-            const today = new Date().toISOString().split("T")[0];
-            const q = query(collection(db, "sales"), where("date", "==", today));
-            const snapshot = await getDocs(q);
-            const salesData: Sale[] = snapshot.docs.map((doc) => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    amount: Number(data.amount ?? 0),
-                    profit: Number(data.profit ?? 0),
-                    date: data.date ?? "",
-                    timestamp: data.timestamp,
-                    medicineId: data.medicine_id,
-                    medicineName: data.medicine_name,
-                    quantity: Number(data.quantity ?? 0),
-                    costPrice: Number(data.cost_price ?? 0),
-                    retailPrice: Number(data.retail_price ?? 0),
-                    doctorFee: Number(data.doctor_fee ?? 0),
-                };
-            });
-            setTodaysSales(salesData);
-
-            // Recalculate total doctor fees
-            const totalDoctorFees = salesData.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-            setTodaysDoctorFees(totalDoctorFees);
-        } catch (err) {
-            console.error("Error processing sale:", err);
-            toast({
-                title: "Error",
-                description: "Failed to process sale. Check console.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    // Process sale & print PDF
-    const handleProcessSaleWithPDF = async () => {
-        if (cart.length === 0 && doctorFee === 0) {
-            toast({
-                title: "Empty Sale",
-                description: "Add medicines or enter doctor fee to process sale.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        try {
-            console.log("Generating PDF with cart items:", cart.length);
-            console.log("Patient data:", activePatient);
-            console.log("Doctor fee:", doctorFee);
-
-            await generateSalePDF({
-                cart: cart,
-                patient: activePatient || undefined,
-            });
-
-            console.log("PDF generation completed");
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            await processSale();
-
-            toast({
-                title: "PDF Generated",
-                description: "Receipt PDF has been downloaded successfully.",
-                variant: "default",
-            });
-        } catch (error) {
-            console.error("Error in PDF generation:", error);
-            toast({
-                title: "PDF Error",
-                description: "Failed to generate PDF. Check console for details.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    // Reverse sale
-    const reverseSale = async (sale: Sale) => {
-        try {
-            // Only update medicine stock if it's not a doctor fee entry
-            if (sale.medicineId !== "DOCTOR_FEE") {
-                const medicineRef = doc(db, "medicines", sale.medicineId);
-                const medicineSnap = await getDoc(medicineRef);
-
-                if (medicineSnap.exists()) {
-                    const currentQty = medicineSnap.data().quantity ?? 0;
-                    await updateDoc(medicineRef, {
-                        quantity: currentQty + sale.quantity,
-                    });
-                }
-            }
-
-            await deleteDoc(doc(db, "sales", sale.id));
-            setTodaysSales((prev) => prev.filter((s) => s.id !== sale.id));
-
-            // Recalculate total doctor fees
-            const updatedSales = todaysSales.filter((s) => s.id !== sale.id);
-            const totalDoctorFees = updatedSales.reduce((sum, s) => sum + (s.doctorFee ?? 0), 0);
-            setTodaysDoctorFees(totalDoctorFees);
-
-            toast({
-                title: "Sale reversed",
-                description: "Sale removed and stock updated.",
-                variant: "default",
-            });
-        } catch (err) {
-            console.error("Error reversing sale:", err);
-            toast({
-                title: "Error",
-                description: "Failed to reverse sale.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    // Clear cart
-    const handleReturn = () => {
-        if (cart.length === 0 && doctorFee === 0) return;
-        const confirmClear = window.confirm("Remove all medicines and doctor fee from cart?");
-        if (confirmClear) {
-            setCart([]);
-            setDoctorFee(0);
-            setActivePrescriptionId(null);
-            setActivePatient(null);
-        }
-    };
-
-    // Load prescription from history
-    const loadFromHistory = (pres: PrescriptionDoc) => {
-        if (!pres.prescription || pres.prescription.length === 0) {
-            toast({
-                title: "Empty prescription",
-                description: "This prescription has no medicines.",
-                variant: "destructive",
-            });
-            return;
-        }
-        addMultipleToCart(pres.prescription);
-        setActivePatient(pres.patient || null);
-        setHistoryOpen(false);
-        toast({
-            title: "Prescription loaded",
-            description: "Medicines added to cart from history.",
+    if (withPDF) {
+      try {
+        await generateSalePDF({
+          cart,
+          patient: activePatient,
+          doctorFee,
         });
-    };
+      } catch (pdfErr) {
+        console.error("PDF generation error", pdfErr);
+      }
+    }
 
-    // ------------------ JSX ------------------
+    const success = await processSale(cart, doctorFee, activePatient, activePrescriptionId);
+    if (success) {
+      setCart([]);
+      setDoctorFee(0);
+      setActivePatient(null);
+      setActivePrescriptionId(null);
+    }
+  };
 
-    return (
-        <div className="p-6 relative">
-            {/* History Button */}
-            <Button
-                onClick={() => setHistoryOpen(true)}
-                className="fixed top-20 right-6 z-40 gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg"
-                variant="outline"
-            >
-                <History className="w-4 h-4" />
-                History
-            </Button>
+  // Filtered prescription history
+  const filteredPrescriptions = useMemo(() => {
+    return prescriptions.filter((p) => {
+      const pName = p.patient?.name?.toLowerCase() || "";
+      const docName = p.patient?.referringDoctor?.toLowerCase() || "";
+      const query = historySearch.toLowerCase();
+      return pName.includes(query) || docName.includes(query);
+    });
+  }, [prescriptions, historySearch]);
 
-            {/* History Sidebar */}
-            {historyOpen && (
-                <>
-                    {/* Overlay */}
-                    <div
-                        className="fixed inset-0 bg-black/50 z-40"
-                        onClick={() => setHistoryOpen(false)}
-                    />
+  return (
+    <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 py-6 md:py-8 space-y-8">
+      {/* Top Header / Action strip */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-card border border-border shadow-xs">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary">
+              <ShoppingCart className="w-5 h-5" />
+            </span>
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+              Sales &amp; Dispensing Register (POS)
+            </h2>
+          </div>
+          <p className="text-xs md:text-sm text-muted-foreground mt-1 ml-0.5">
+            Real-time billing, clinical prescription intake, and instant receipt printing
+          </p>
+        </div>
 
-                    {/* Sidebar */}
-                    <div className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-background shadow-2xl z-50 overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                    Prescription History
-                                </h2>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setHistoryOpen(false)}
-                                    className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                                >
-                                    <X className="w-5 h-5" />
-                                </Button>
-                            </div>
+        <div className="flex items-center gap-3">
+          {/* History Drawer Trigger */}
+          <button
+            onClick={() => setHistoryDrawerOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs border border-primary/20 shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <History className="w-4 h-4" />
+            <span>Prescription History</span>
+          </button>
+        </div>
+      </div>
 
-                            {/* Search Bar */}
-                            <div className="relative mb-6">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    placeholder="Search by patient or doctor name..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 border-2 focus:border-purple-500"
-                                />
-                            </div>
+      {/* Main Grid: 2 Columns */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* Left Column: Cart & Input Area (7 cols on xl) */}
+        <div className="xl:col-span-7 space-y-6">
+          {/* Active Patient Pill Banner (if prescription loaded) */}
+          {activePatient && (
+            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex items-start justify-between gap-3 animate-in fade-in">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <User className="w-5 h-5" />
+                </div>
+                <div className="text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-foreground">
+                      {activePatient.name || "Patient"}
+                    </span>
+                    {activePatient.age && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-semibold">
+                        {activePatient.age} yrs {activePatient.gender || ""}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground mt-0.5">
+                    Dr. {activePatient.referringDoctor || "General Consultation"} •{" "}
+                    {activePatient.phone || "No contact"}
+                  </p>
+                </div>
+              </div>
 
-                            {/* History List */}
-                            <div className="space-y-4">
-                                {filteredHistory.length === 0 ? (
-                                    <p className="text-muted-foreground text-center py-8">
-                                        {searchQuery ? "No results found." : "No prescription history."}
-                                    </p>
-                                ) : (
-                                    filteredHistory.map((pres) => (
-                                        <div
-                                            key={pres.id}
-                                            className={`medical-card p-4 border-l-4 ${pres.processed
-                                                ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-l-green-500"
-                                                : "border-l-blue-500"
-                                                }`}
-                                        >
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <p className="font-semibold text-lg">
-                                                        {pres.patient?.name ?? "Unknown Patient"}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Dr. {pres.patient?.referringDoctor ?? "-"}
-                                                    </p>
-                                                    {pres.patient?.age && (
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Age: {pres.patient.age} {pres.patient.gender && `• ${pres.patient.gender}`}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                {pres.processed && (
-                                                    <span className="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded-full font-medium">
-                                                        ✓ Processed
-                                                    </span>
-                                                )}
-                                            </div>
+              <button
+                onClick={() => {
+                  setActivePatient(null);
+                  setActivePrescriptionId(null);
+                }}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
+                title="Detach patient"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-                                            <div className="mb-3 max-h-40 overflow-y-auto">
-                                                <p className="text-sm font-medium mb-2">Medicines:</p>
-                                                {pres.prescription && pres.prescription.length > 0 ? (
-                                                    <ul className="text-sm space-y-1">
-                                                        {pres.prescription.map((med, idx) => (
-                                                            <li key={idx} className="text-muted-foreground">
-                                                                • {med.name} ({med.qty}x) - PKR {med.retail_price}
-                                                                {med.dosage && (
-                                                                    <span className="text-xs block ml-4 text-blue-600">
-                                                                        {med.dosage}
-                                                                    </span>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                ) : (
-                                                    <p className="text-sm text-muted-foreground">No medicines</p>
-                                                )}
-                                            </div>
+          {/* Quick Search Medicine to Add */}
+          <div className="relative">
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-card border border-border shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+              <Search className="w-5 h-5 text-muted-foreground ml-3" />
+              <input
+                type="text"
+                placeholder="Search and tap medicine to add to cart (e.g. Panadol, Augmentin)..."
+                value={medSearchQuery}
+                onChange={(e) => {
+                  setMedSearchQuery(e.target.value);
+                  setShowSearchDropdown(true);
+                }}
+                onFocus={() => setShowSearchDropdown(true)}
+                className="w-full bg-transparent py-2 px-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              />
+              {medSearchQuery && (
+                <button
+                  onClick={() => setMedSearchQuery("")}
+                  className="p-1.5 text-muted-foreground hover:text-foreground mr-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
-                                            <div className="flex justify-between items-center pt-3 border-t">
-                                                <div>
-                                                    <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                                                        Total: PKR {(pres.totalRetail ?? 0).toFixed(2)}
-                                                    </p>
-                                                    {pres.processedAt && (
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Processed: {pres.processedAt.toDate().toLocaleDateString()}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => loadFromHistory(pres)}
-                                                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
-                                                >
-                                                    Load to Cart
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
+            {/* Live Search Suggestions Dropdown */}
+            {showSearchDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-30 bg-card rounded-2xl border border-border shadow-xl overflow-hidden max-h-64 overflow-y-auto divide-y divide-border/60">
+                {searchResults.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => addToCart(m, 1)}
+                    className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/40 transition-colors"
+                  >
+                    <div>
+                      <p className="font-semibold text-sm text-foreground">{m.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {m.category || "General"} • Stock:{" "}
+                        <strong
+                          className={m.quantity < 10 ? "text-destructive" : "text-emerald-600"}
+                        >
+                          {m.quantity}
+                        </strong>
+                      </p>
                     </div>
-                </>
+                    <div className="text-right">
+                      <p className="font-bold text-sm text-primary num-mono">
+                        {formatPKR(m.retail_price)}
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">Tap to add +</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Side */}
-                <div className="space-y-6">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Sales Management
-                    </h1>
+          {/* Doctor Consultation Fee Card */}
+          <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-700 dark:text-teal-300 flex items-center justify-center flex-shrink-0">
+                <Stethoscope className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wider">
+                  Doctor Consultation Fee
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Optional clinical consultation entry
+                </p>
+              </div>
+            </div>
 
-                    {/* Active Patient Info */}
-                    {activePatient && (
-                        <div className="medical-card p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-l-4 border-l-blue-500 shadow-md">
-                            <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                                <Receipt className="w-4 h-4" />
-                                Active Prescription
-                            </h3>
-                            <p className="text-sm"><strong>Patient:</strong> {activePatient.name}</p>
-                            <p className="text-sm"><strong>Doctor:</strong> {activePatient.referringDoctor}</p>
-                            {activePatient.age && <p className="text-sm"><strong>Age:</strong> {activePatient.age}</p>}
-                            {activePatient.gender && <p className="text-sm"><strong>Gender:</strong> {activePatient.gender}</p>}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-teal-800 dark:text-teal-200">PKR</span>
+              <input
+                type="number"
+                min="0"
+                step="50"
+                placeholder="0"
+                value={doctorFee || ""}
+                onChange={(e) => setDoctorFee(Math.max(0, Number(e.target.value) || 0))}
+                className="w-28 px-3 py-1.5 text-right font-mono font-bold text-sm rounded-xl bg-card border border-teal-500/30 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              />
+              {doctorFee > 0 && (
+                <button
+                  onClick={() => setDoctorFee(0)}
+                  className="p-1 text-muted-foreground hover:text-destructive"
+                  title="Clear doctor fee"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Shopping Cart List */}
+          <div className="p-5 rounded-3xl bg-card border border-border shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-base text-foreground">
+                  Prescription Cart ({cart.length} items)
+                </h3>
+              </div>
+
+              {(cart.length > 0 || doctorFee > 0) && (
+                <button
+                  onClick={clearCart}
+                  className="text-xs text-destructive hover:underline flex items-center gap-1 font-semibold"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear Cart</span>
+                </button>
+              )}
+            </div>
+
+            {/* Cart Items */}
+            <div className="py-3 space-y-2.5 min-h-[220px] max-h-80 overflow-y-auto pr-1">
+              {cart.length === 0 && doctorFee === 0 ? (
+                <div className="text-center py-12 text-muted-foreground flex flex-col items-center justify-center">
+                  <ShoppingCart className="w-10 h-10 opacity-30 mb-2" />
+                  <p className="text-sm font-semibold">Your dispensing cart is currently empty</p>
+                  <p className="text-xs mt-1">
+                    Search medicines above or load an incoming prescription from the queue.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {cart.map((item) => (
+                    <div
+                      key={item.medicineId}
+                      className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm hover:border-border transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-foreground text-sm truncate">
+                          {item.medicineName}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span className="num-mono font-medium">
+                            {formatPKR(item.price)} each
+                          </span>
+                          {item.dosage && (
+                            <span className="text-primary font-medium">
+                              • {item.dosage}
+                            </span>
+                          )}
                         </div>
+                        {item.instructions && (
+                          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                            Instr: {item.instructions}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Stepper & Line Total */}
+                      <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0">
+                        <div className="flex items-center bg-card rounded-xl border border-border p-0.5">
+                          <button
+                            onClick={() => updateCartQuantity(item.medicineId, -1)}
+                            className="p-1 hover:bg-muted rounded-lg text-muted-foreground"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-10 text-center font-mono font-bold text-sm">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateCartQuantity(item.medicineId, 1)}
+                            className="p-1 hover:bg-muted rounded-lg text-muted-foreground"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="text-right min-w-[80px]">
+                          <span className="font-black text-sm text-foreground num-mono block">
+                            {formatPKR(item.price * item.quantity)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            Margin: +{formatPKR((item.price - item.cost) * item.quantity)}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => removeFromCart(item.medicineId)}
+                          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Doctor fee row in cart */}
+                  {doctorFee > 0 && (
+                    <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Stethoscope className="w-4 h-4 text-teal-600" />
+                        <div>
+                          <p className="font-bold text-teal-900 dark:text-teal-200">
+                            Doctor Consultation Fee
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Clinical professional charge
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-teal-700 dark:text-teal-300 num-mono">
+                        {formatPKR(doctorFee)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Cart Billing Summary Footer */}
+            <div className="pt-4 border-t border-border space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Medicines Subtotal:</span>
+                <span className="font-mono font-semibold text-foreground">
+                  {formatPKR(cartSubtotal)}
+                </span>
+              </div>
+
+              {doctorFee > 0 && (
+                <div className="flex items-center justify-between text-sm text-teal-700 dark:text-teal-300">
+                  <span>Consultation Fee:</span>
+                  <span className="font-mono font-semibold">{formatPKR(doctorFee)}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-base font-bold pt-2 border-t border-border/60">
+                <span className="text-foreground">Grand Total:</span>
+                <span className="text-2xl font-black text-primary num-mono">
+                  {formatPKR(grandTotal)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Estimated Net Profit on this sale:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 num-mono">
+                  +{formatPKR(cartProfit + doctorFee)}
+                </span>
+              </div>
+
+              {/* Checkout Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={() => handleCheckout(false)}
+                  disabled={cart.length === 0 && doctorFee <= 0}
+                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 disabled:opacity-40 transition-all"
+                >
+                  <Receipt className="w-4 h-4" />
+                  <span>Process Sale Only</span>
+                </button>
+
+                <button
+                  onClick={() => handleCheckout(true)}
+                  disabled={cart.length === 0 && doctorFee <= 0}
+                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm shadow-md shadow-primary/20 disabled:opacity-40 transition-all"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Process &amp; Print PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Prescriptions Queue & Today's Sales (5 cols on xl) */}
+        <div className="xl:col-span-5 space-y-6">
+          {/* Today's Sales Ticker KPI */}
+          <div className="p-5 rounded-3xl bg-card border border-border shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base text-foreground">Today's Sales Summary</h3>
+              <button
+                onClick={togglePrivacyMode}
+                className="text-xs font-semibold text-primary hover:underline"
+              >
+                {privacyMode ? "Reveal" : "Hide"}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60">
+                <span className="text-[11px] font-semibold text-muted-foreground uppercase">
+                  Sales (Meds)
+                </span>
+                <p className="text-xl font-bold text-foreground mt-0.5 num-mono">
+                  {privacyMode ? "••••" : formatPKR(todaysMedicineSales)}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase">
+                  Net Profit
+                </span>
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 num-mono">
+                  {privacyMode ? "••••" : formatPKR(todaysProfit)}
+                </p>
+              </div>
+            </div>
+
+            {todaysDoctorFees > 0 && (
+              <div className="p-3 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-between text-xs">
+                <span className="text-teal-800 dark:text-teal-200 font-semibold">
+                  Doctor Fees Collected:
+                </span>
+                <span className="font-bold text-teal-700 dark:text-teal-300 num-mono text-sm">
+                  {privacyMode ? "••••" : formatPKR(todaysDoctorFees)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Pending Prescriptions Queue */}
+          <div className="p-5 rounded-3xl bg-card border border-border shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-sm text-foreground">
+                  Incoming Prescriptions Queue
+                </h3>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {prescriptions.filter((p) => !p.processed).length} pending
+              </span>
+            </div>
+
+            <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+              {prescriptions.filter((p) => !p.processed).length === 0 ? (
+                <div className="text-center py-6 text-xs text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border">
+                  No pending prescriptions in queue.
+                </div>
+              ) : (
+                prescriptions
+                  .filter((p) => !p.processed)
+                  .map((rx) => (
+                    <div
+                      key={rx.id}
+                      className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 flex items-center justify-between gap-3 text-xs hover:border-primary/50 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-foreground text-sm truncate">
+                          {rx.patient?.name || "Patient Prescription"}
+                        </p>
+                        <p className="text-muted-foreground mt-0.5 truncate">
+                          {rx.patient?.referringDoctor || "Doctor"} • {rx.prescription?.length || 0}{" "}
+                          items
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => loadPrescriptionToCart(rx)}
+                        className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-xs hover:bg-primary-hover flex-shrink-0 transition-colors"
+                      >
+                        Load Cart
+                      </button>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+
+          {/* Recent Sales with 1-Click Reversal */}
+          <div className="p-5 rounded-3xl bg-card border border-border shadow-xs space-y-3">
+            <h3 className="font-bold text-sm text-foreground">Today's Recent Transactions</h3>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {todaysSales.length === 0 ? (
+                <div className="text-center py-8 text-xs text-muted-foreground">
+                  No sales processed yet today.
+                </div>
+              ) : (
+                todaysSales.map((s) => (
+                  <div
+                    key={s.id}
+                    className="p-3 rounded-2xl bg-muted/30 border border-border/60 flex items-center justify-between text-xs hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="font-semibold text-foreground truncate">
+                        {s.medicine_name}
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">
+                        {s.quantity}x • Amount: <strong className="text-foreground">{formatPKR(s.amount)}</strong>
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => reverseSale(s)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors flex-shrink-0"
+                      title="Reverse sale & return medicine to stock"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reverse</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Prescription History Slide-out Drawer */}
+      {historyDrawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setHistoryDrawerOpen(false)} />
+
+          <div className="relative w-full max-w-lg bg-card border-l border-border h-full shadow-2xl flex flex-col p-6 space-y-5 animate-in slide-in-from-right duration-250">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <History className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-lg text-foreground">Prescription History</h3>
+              </div>
+              <button
+                onClick={() => setHistoryDrawerOpen(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* History Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search patient or doctor name..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-background border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Prescriptions List */}
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {filteredPrescriptions.length === 0 ? (
+                <div className="text-center py-12 text-sm text-muted-foreground">
+                  No prescription records found.
+                </div>
+              ) : (
+                filteredPrescriptions.map((rx) => (
+                  <div
+                    key={rx.id}
+                    className="p-4 rounded-2xl bg-muted/30 border border-border/80 space-y-2.5 text-xs"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-bold text-sm text-foreground">
+                          {rx.patient?.name || "Unknown Patient"}
+                        </p>
+                        <p className="text-muted-foreground">
+                          Dr. {rx.patient?.referringDoctor || "General Practitioner"}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                          rx.processed
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        }`}
+                      >
+                        {rx.processed ? "✓ Completed" : "Pending"}
+                      </span>
+                    </div>
+
+                    {/* Prescribed Items summary */}
+                    {rx.prescription && rx.prescription.length > 0 && (
+                      <div className="space-y-1 py-1 text-muted-foreground border-y border-border/40">
+                        {rx.prescription.map((it, idx) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>
+                              {it.name} ({it.qty}x)
+                            </span>
+                            <span className="font-mono">{formatPKR((it.retail_price || 0) * (it.qty || 1))}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
 
-                    {/* Doctor Fee Input */}
-                    <div className="medical-card p-4 border-l-4 border-l-teal-500 shadow-md bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
-                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-teal-700 dark:text-teal-300">
-                            <Stethoscope className="w-4 h-4" />
-                            Doctor Consultation Fee
-                        </h3>
-                        <div className="flex items-center gap-3">
-                            <Input
-                                type="number"
-                                placeholder="Enter doctor fee (PKR)"
-                                value={doctorFee || ""}
-                                onChange={(e) => setDoctorFee(Number(e.target.value) || 0)}
-                                className="flex-1 border-2 focus:border-teal-500"
-                                min="0"
-                            />
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDoctorFee(0)}
-                                className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                            >
-                                Clear
-                            </Button>
-                        </div>
-                        {doctorFee > 0 && (
-                            <p className="text-sm text-teal-600 dark:text-teal-400 mt-2 font-medium">
-                                Fee Added: PKR {doctorFee.toFixed(2)}
-                            </p>
-                        )}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="font-semibold text-foreground">
+                        Total: {formatPKR(rx.totalRetail || 0)}
+                      </span>
+                      <button
+                        onClick={() => loadPrescriptionToCart(rx)}
+                        className="px-3 py-1.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary-hover shadow-xs"
+                      >
+                        Load to POS Cart
+                      </button>
                     </div>
-
-                    {/* Medicine Search */}
-                    <div className="medical-card p-4 border-l-4 border-l-purple-500 shadow-md">
-                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
-                            <Plus className="w-4 h-4" />
-                            Add Medicine to Cart
-                        </h3>
-                        <SearchBar onSelect={(medicine) => addToCart(medicine, 1)} />
-                    </div>
-
-                    {/* Shopping Cart */}
-                    <div className="medical-card shadow-lg">
-                        <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg flex justify-between">
-                            <h3 className="font-semibold">Shopping Cart</h3>
-                            <ShoppingCart className="w-5 h-5" />
-                        </div>
-
-                        <div className="p-4">
-                            {cart.length > 0 || doctorFee > 0 ? (
-                                <>
-                                    {cart.map((item) => (
-                                        <div
-                                            key={item.medicineId}
-                                            className="flex flex-col p-3 bg-gradient-to-r from-accent/30 to-accent/20 rounded-lg mb-3 border-l-4 border-l-blue-400"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="font-medium text-blue-900 dark:text-blue-100">{item.medicineName}</h4>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        PKR {item.price} each
-                                                    </p>
-                                                    {item.dosage && (
-                                                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                            <strong>Dosage:</strong> {item.dosage}
-                                                        </p>
-                                                    )}
-                                                    {item.instructions && (
-                                                        <p className="text-xs text-green-600 dark:text-green-400">
-                                                            <strong>Instructions:</strong> {item.instructions}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            updateQuantity(item.medicineId, item.quantity - 1)
-                                                        }
-                                                        className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                                                    >
-                                                        <Minus className="w-3 h-3" />
-                                                    </Button>
-                                                    <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            updateQuantity(item.medicineId, item.quantity + 1)
-                                                        }
-                                                        className="hover:bg-green-100 dark:hover:bg-green-900/20"
-                                                    >
-                                                        <Plus className="w-3 h-3" />
-                                                    </Button>
-                                                </div>
-                                                <div className="text-right ml-4">
-                                                    <p className="font-bold text-purple-600 dark:text-purple-400">
-                                                        PKR {(item.price * item.quantity).toFixed(2)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Doctor Fee Display in Cart */}
-                                    {doctorFee > 0 && (
-                                        <div className="flex flex-col p-3 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-lg mb-3 border-l-4 border-l-teal-500">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="font-medium text-teal-900 dark:text-teal-100 flex items-center gap-2">
-                                                        <Stethoscope className="w-4 h-4" />
-                                                        Doctor Consultation Fee
-                                                    </h4>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Professional consultation
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="font-bold text-teal-600 dark:text-teal-400">
-                                                        PKR {doctorFee.toFixed(2)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="border-t pt-3 mt-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 rounded-lg">
-                                        <div className="flex justify-between mb-2">
-                                            <span className="font-medium">Medicines Subtotal:</span>
-                                            <span className="font-bold text-lg">PKR {getTotalAmount().toFixed(2)}</span>
-                                        </div>
-                                        {doctorFee > 0 && (
-                                            <div className="flex justify-between mb-2">
-                                                <span className="font-medium text-teal-600 dark:text-teal-400">Doctor Fee:</span>
-                                                <span className="font-bold text-lg text-teal-600 dark:text-teal-400">
-                                                    PKR {doctorFee.toFixed(2)}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between mb-2 text-lg border-t pt-2">
-                                            <span className="font-bold">Grand Total:</span>
-                                            <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
-                                                PKR {getGrandTotal().toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between mb-4 pb-3 border-b">
-                                            <span className="font-medium">Profit:</span>
-                                            <span className="font-bold text-lg text-green-600 dark:text-green-400">
-                                                PKR {(getTotalProfit() + doctorFee).toFixed(2)}
-                                            </span>
-                                        </div>
-
-                                        {activePrescriptionId ? (
-                                            <div className="flex flex-col space-y-2">
-                                                <div className="flex space-x-2">
-                                                    <Button
-                                                        onClick={processSale}
-                                                        className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                                                    >
-                                                        <Receipt className="w-4 h-4" /> Process Sale
-                                                    </Button>
-                                                    <Button
-                                                        onClick={handleProcessSaleWithPDF}
-                                                        className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                                                    >
-                                                        <FileDown className="w-4 h-4" /> Print PDF
-                                                    </Button>
-                                                </div>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={handleReturn}
-                                                    className="w-full hover:bg-red-100 dark:hover:bg-red-900/20"
-                                                >
-                                                    <RotateCcw className="w-4 h-4 mr-2" /> Return
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex space-x-3">
-                                                <Button
-                                                    onClick={processSale}
-                                                    className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                                                >
-                                                    <Receipt className="w-4 h-4" /> Process Sale
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={handleReturn}
-                                                    className="hover:bg-red-100 dark:hover:bg-red-900/20"
-                                                >
-                                                    <RotateCcw className="w-4 h-4" /> Return
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                                    <p className="text-muted-foreground">Your cart is empty</p>
-                                    <p className="text-sm text-muted-foreground mt-2">Add medicines or enter doctor fee</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Side */}
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                            Today's Sales Summary
-                        </h2>
-                        {/* Reveal Button */}
-                        <Button
-                            onClick={() => setIsRevealed(!isRevealed)}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-md"
-                        >
-                            {isRevealed ? (
-                                <>
-                                    <EyeOff className="w-4 h-4" />
-                                    Hide Totals
-                                </>
-                            ) : (
-                                <>
-                                    <Eye className="w-4 h-4" />
-                                    Reveal Totals
-                                </>
-                            )}
-                        </Button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="stats-card-primary p-4 shadow-lg rounded-lg border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
-                            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Sales (Medicines Only)</p>
-                            <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                {isRevealed ? (
-                                    `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.amount ?? 0), 0).toFixed(2)}`
-                                ) : (
-                                    <span className="text-gray-400">••••••</span>
-                                )}
-                            </h3>
-                        </div>
-                        <div className="stats-card-success p-4 shadow-lg rounded-lg border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
-                            <p className="text-sm font-medium text-green-700 dark:text-green-300">Total Profit (Medicines Only)</p>
-                            <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                {isRevealed ? (
-                                    `PKR ${todaysSales.filter(s => s.medicineId !== "DOCTOR_FEE").reduce((sum, s) => sum + (s.profit ?? 0), 0).toFixed(2)}`
-                                ) : (
-                                    <span className="text-gray-400">••••••</span>
-                                )}
-                            </h3>
-                        </div>
-                    </div>
-
-                    {/* Doctor Fees Card */}
-                    <div className="stats-card p-4 shadow-lg rounded-lg border-l-4 border-l-teal-500 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-teal-700 dark:text-teal-300 flex items-center gap-2">
-                                    <Stethoscope className="w-4 h-4" />
-                                    Doctor Fees Today
-                                </p>
-                                <h3 className="text-2xl font-bold text-teal-900 dark:text-teal-100">
-                                    {isRevealed ? (
-                                        `PKR ${todaysDoctorFees.toFixed(2)}`
-                                    ) : (
-                                        <span className="text-gray-400">••••••</span>
-                                    )}
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Prescriptions */}
-                    <div className="medical-card shadow-lg">
-                        <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-t-lg flex justify-between">
-                            <h3 className="font-semibold">Prescriptions</h3>
-                            <Receipt className="w-5 h-5" />
-                        </div>
-                        <div className="p-4 space-y-3 max-h-[280px] overflow-y-auto">
-                            {prescriptions.length === 0 ? (
-                                <p className="text-muted-foreground text-center py-4">No prescriptions found.</p>
-                            ) : (
-                                prescriptions.map((pres) => (
-                                    <div
-                                        key={pres.id}
-                                        className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg flex justify-between border-l-4 border-l-purple-500 hover:shadow-md transition-shadow"
-                                    >
-                                        <div>
-                                            <p className="font-medium text-purple-900 dark:text-purple-100">
-                                                {pres.patient?.name ?? "Unknown Patient"}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Doctor: {pres.patient?.referringDoctor ?? "-"} •
-                                                <span className="font-semibold text-purple-600 dark:text-purple-400 ml-1">
-                                                    PKR {(pres.totalRetail ?? 0).toFixed(2)}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            onClick={() => {
-                                                if (!pres.prescription || pres.prescription.length === 0) {
-                                                    toast({
-                                                        title: "Empty prescription",
-                                                        description: "This prescription has no medicines.",
-                                                        variant: "destructive",
-                                                    });
-                                                    return;
-                                                }
-                                                addMultipleToCart(pres.prescription);
-                                                setActivePrescriptionId(pres.id);
-                                                setActivePatient(pres.patient || null);
-                                                toast({
-                                                    title: "Prescription loaded",
-                                                    description: "All medicines added to cart.",
-                                                });
-                                            }}
-                                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                                        >
-                                            Add to Cart
-                                        </Button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Recent Sales */}
-                    <div className="medical-card shadow-lg">
-                        <div className="p-4 border-b bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
-                            <h3 className="font-semibold">Recent Sales</h3>
-                        </div>
-                        <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
-                            {todaysSales.length === 0 ? (
-                                <p className="text-muted-foreground text-center py-4">No sales yet today.</p>
-                            ) : (
-                                todaysSales.map((s) => (
-                                    <div
-                                        key={s.id}
-                                        className={`flex justify-between items-center p-3 rounded-lg border-l-4 hover:shadow-md transition-shadow ${s.medicineId === "DOCTOR_FEE"
-                                            ? "bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 border-l-teal-500"
-                                            : "bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-l-orange-500"
-                                            }`}
-                                    >
-                                        <div>
-                                            <p className={`font-medium flex items-center gap-2 ${s.medicineId === "DOCTOR_FEE"
-                                                ? "text-teal-900 dark:text-teal-100"
-                                                : "text-orange-900 dark:text-orange-100"
-                                                }`}>
-                                                {s.medicineId === "DOCTOR_FEE" && <Stethoscope className="w-4 h-4" />}
-                                                {s.medicineName}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {s.medicineId === "DOCTOR_FEE" ? (
-                                                    <>Consultation Fee = </>
-                                                ) : (
-                                                    <>{s.quantity} × PKR {s.retailPrice} = </>
-                                                )}
-                                                <span className={`font-semibold ml-1 ${s.medicineId === "DOCTOR_FEE"
-                                                    ? "text-teal-600 dark:text-teal-400"
-                                                    : "text-orange-600 dark:text-orange-400"
-                                                    }`}>
-                                                    PKR {s.amount.toFixed(2)}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() => reverseSale(s)}
-                                            className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
-                                        >
-                                            Reverse
-                                        </Button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
+                  </div>
+                ))
+              )}
             </div>
+          </div>
         </div>
-    );
-}
+      )}
+    </div>
+  );
+};

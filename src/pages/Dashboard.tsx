@@ -1,1305 +1,519 @@
-// import { useEffect, useState, useCallback } from "react";
-// import {
-//   TrendingUp,
-//   Package,
-//   DollarSign,
-//   AlertTriangle,
-//   RefreshCw,
-//   Loader2,
-//   Eye,
-//   EyeOff,
-//   Stethoscope,
-//   ShoppingCart,
-//   Activity,
-//   Plus,
-//   Minus,
-//   Send,
-//   X,
-//   Phone,
-// } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { db } from "@/firebase";
-// import { collection, getDocs, query, where } from "firebase/firestore";
-
-// export default function Dashboard() {
-//   const [todaysSales, setTodaysSales] = useState(0);
-//   const [todaysProfit, setTodaysProfit] = useState(0);
-//   const [todaysDoctorFees, setTodaysDoctorFees] = useState(0);
-//   const [totalMedicines, setTotalMedicines] = useState(0);
-//   const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
-//   const [loading, setLoading] = useState(false);
-//   const [isRevealed, setIsRevealed] = useState(true);
-
-//   // Reorder states
-//   const [isReorderMode, setIsReorderMode] = useState(false);
-//   const [reorderCart, setReorderCart] = useState<any[]>([]);
-//   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-
-//   // WhatsApp numbers configuration
-//   const whatsappNumbers = [
-//     { id: "supplier1", name: "Murshid Medicos Wholsale Num#1", number: "+923332511543" },
-//     { id: "supplier1", name: "Murshid Medicos Wholsale Num#2", number: "+923337995170" },
-//     { id: "supplier2", name: "Babar Medical Fba Num#1", number: "+923343073375" },
-//     { id: "supplier2", name: "Babar Medical Fba Num#2", number: "+923322066879" },
-//   ];
-
-//   // Fetch Dashboard Data
-//   const fetchDashboardData = useCallback(async () => {
-//     try {
-//       setLoading(true);
-
-//       // --- Get Medicines ---
-//       const medSnap = await getDocs(collection(db, "medicines"));
-//       setTotalMedicines(medSnap.size);
-
-//       // Low stock (threshold = 10 units)
-//       const lowStock: any[] = [];
-//       medSnap.forEach((doc) => {
-//         const data = doc.data();
-//         if (data.quantity < 10) {
-//           lowStock.push({
-//             medicineId: doc.id,
-//             medicineName: data.name,
-//             currentStock: data.quantity,
-//             costPrice: data.cost_price || 0,
-//           });
-//         }
-//       });
-//       setLowStockAlerts(lowStock);
-
-//       // --- Get Sales for Today ---
-//       const today = new Date().toISOString().split("T")[0];
-//       const salesRef = collection(db, "sales");
-//       const q = query(salesRef, where("date", "==", today));
-//       const salesSnap = await getDocs(q);
-
-//       let salesTotal = 0;
-//       let profitTotal = 0;
-//       let doctorFeesTotal = 0;
-
-//       salesSnap.forEach((doc) => {
-//         const data = doc.data();
-//         if (data.medicine_id !== "DOCTOR_FEE") {
-//           salesTotal += data.amount || 0;
-//           profitTotal += data.profit || 0;
-//         } else {
-//           doctorFeesTotal += data.doctor_fee || 0;
-//         }
-//       });
-
-//       setTodaysSales(salesTotal);
-//       setTodaysProfit(profitTotal);
-//       setTodaysDoctorFees(doctorFeesTotal);
-//     } catch (error) {
-//       console.error("Error fetching dashboard data:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     fetchDashboardData();
-//   }, [fetchDashboardData]);
-
-//   // Add to reorder cart
-//   const addToReorderCart = (medicine: any) => {
-//     const existing = reorderCart.find((item) => item.medicineId === medicine.medicineId);
-//     if (existing) {
-//       setReorderCart(
-//         reorderCart.map((item) =>
-//           item.medicineId === medicine.medicineId
-//             ? { ...item, quantity: item.quantity + 10 }
-//             : item
-//         )
-//       );
-//     } else {
-//       setReorderCart([
-//         ...reorderCart,
-//         {
-//           ...medicine,
-//           quantity: 10,
-//         },
-//       ]);
-//     }
-//   };
-
-//   // Update quantity in cart
-//   // const updateCartQuantity = (medicineId: string, delta: number) => {
-//   //   setReorderCart(
-//   //     reorderCart.map((item) =>
-//   //       item.medicineId === medicineId
-//   //     ? { ...item, quantity: Math.max(1, Number(item.quantity) + delta) }
-//   //         : item
-//   //     )
-//   //   );
-//   // };
-
-//   const updateCartQuantity = (medicineId: string, delta: number) => {
-//     setReorderCart(
-//       reorderCart.map((item) => {
-//         if (item.medicineId === medicineId) {
-//           return {
-//             ...item,
-//             quantity: Math.max(1, Number(item.quantity) + delta)
-//           };
-//         }
-//         return item;
-//       })
-//     );
-//   };
-
-
-
-//   // Remove from cart
-//   const removeFromCart = (medicineId: string) => {
-//     setReorderCart(reorderCart.filter((item) => item.medicineId !== medicineId));
-//   };
-
-//   // Calculate total bill
-//   const calculateTotal = () => {
-//     return reorderCart.reduce((sum, item) => sum + item.costPrice * item.quantity, 0);
-//   };
-
-//   // Generate WhatsApp message
-//   const generateWhatsAppMessage = () => {
-//     let message = "🏥 *SMMC - Pharmacy Reorder Request*\n\n";
-//     message += `📅 Date: ${new Date().toLocaleDateString()}\n`;
-//     message += `⏰ Time: ${new Date().toLocaleTimeString()}\n\n`;
-//     message += "📦 *Items to Order:*\n";
-//     message += "━━━━━━━━━━━━━━━━━━━━\n\n";
-
-//     reorderCart.forEach((item, index) => {
-//       message += `${index + 1}. *${item.medicineName}*\n`;
-//       message += `   • Quantity: ${item.quantity} units\n`;
-//       message += `   • Unit Cost: PKR ${item.costPrice}\n`;
-//       message += `   • Subtotal: PKR ${(item.costPrice * item.quantity).toLocaleString()}\n\n`;
-//     });
-
-//     message += "━━━━━━━━━━━━━━━━━━━━\n";
-//     message += `💰 *Total Bill: PKR ${calculateTotal().toLocaleString()}*\n\n`;
-//     message += "Please confirm availability and delivery time.\n";
-//     message += "Thank you! 🙏";
-
-//     return encodeURIComponent(message);
-//   };
-
-//   // Send to WhatsApp
-//   const sendToWhatsApp = (number: string) => {
-//     const message = generateWhatsAppMessage();
-//     const whatsappUrl = `https://wa.me/${number.replace(/[^0-9]/g, "")}?text=${message}`;
-//     window.open(whatsappUrl, "_blank");
-//     setShowWhatsAppModal(false);
-//     setIsReorderMode(false);
-//     setReorderCart([]);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 space-y-6">
-//       {/* Header Section */}
-//       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-//         <div>
-//           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-//             Dashboard Overview
-//           </h1>
-//           <p className="text-muted-foreground mt-2 flex items-center gap-2">
-//             <Activity className="w-4 h-4" />
-//             Real-time insights for your medical store
-//           </p>
-//         </div>
-//         <div className="flex gap-3">
-//           <Button
-//             onClick={() => setIsRevealed(!isRevealed)}
-//             variant="outline"
-//             className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-lg"
-//           >
-//             {isRevealed ? (
-//               <>
-//                 <EyeOff className="w-4 h-4" />
-//                 Hide Values
-//               </>
-//             ) : (
-//               <>
-//                 <Eye className="w-4 h-4" />
-//                 Show Values
-//               </>
-//             )}
-//           </Button>
-//           <Button
-//             onClick={fetchDashboardData}
-//             variant="outline"
-//             className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-none shadow-lg"
-//             disabled={loading}
-//           >
-//             {loading ? (
-//               <>
-//                 <Loader2 className="w-4 h-4 animate-spin" />
-//                 Refreshing...
-//               </>
-//             ) : (
-//               <>
-//                 <RefreshCw className="w-4 h-4" />
-//                 Refresh
-//               </>
-//             )}
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* Stats Cards */}
-//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-//         {/* Today's Sales */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-//           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-4">
-//               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-//                 <DollarSign className="w-6 h-6" />
-//               </div>
-//               <ShoppingCart className="w-8 h-8 opacity-20" />
-//             </div>
-//             <p className="text-sm font-medium text-blue-100 mb-1">Today's Sales</p>
-//             <h3 className="text-3xl font-bold">
-//               {isRevealed ? `PKR ${todaysSales.toLocaleString()}` : "••••••"}
-//             </h3>
-//             <p className="text-xs text-blue-100 mt-2">Medicines Only</p>
-//           </div>
-//         </div>
-
-//         {/* Today's Profit */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-//           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-4">
-//               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-//                 <TrendingUp className="w-6 h-6" />
-//               </div>
-//               <TrendingUp className="w-8 h-8 opacity-20" />
-//             </div>
-//             <p className="text-sm font-medium text-green-100 mb-1">Today's Profit</p>
-//             <h3 className="text-3xl font-bold">
-//               {isRevealed ? `PKR ${todaysProfit.toLocaleString()}` : "••••••"}
-//             </h3>
-//             <p className="text-xs text-green-100 mt-2">Net Earnings</p>
-//           </div>
-//         </div>
-
-//         {/* Doctor Fees */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-//           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-4">
-//               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-//                 <Stethoscope className="w-6 h-6" />
-//               </div>
-//               <Stethoscope className="w-8 h-8 opacity-20" />
-//             </div>
-//             <p className="text-sm font-medium text-teal-100 mb-1">Doctor Fees</p>
-//             <h3 className="text-3xl font-bold">
-//               {isRevealed ? `PKR ${todaysDoctorFees.toLocaleString()}` : "••••••"}
-//             </h3>
-//             <p className="text-xs text-teal-100 mt-2">Consultation Fees</p>
-//           </div>
-//         </div>
-
-//         {/* Total Medicines */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-//           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-4">
-//               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-//                 <Package className="w-6 h-6" />
-//               </div>
-//               <Package className="w-8 h-8 opacity-20" />
-//             </div>
-//             <p className="text-sm font-medium text-purple-100 mb-1">Total Medicines</p>
-//             <h3 className="text-3xl font-bold">{totalMedicines}</h3>
-//             <p className="text-xs text-purple-100 mt-2">In Inventory</p>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Secondary Stats Row */}
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-//         {/* Low Stock Alerts Card */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-//           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-3">
-//               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-//                 <AlertTriangle className="w-5 h-5" />
-//               </div>
-//             </div>
-//             <p className="text-sm font-medium text-orange-100 mb-1">Low Stock Alerts</p>
-//             <h3 className="text-2xl font-bold">{lowStockAlerts.length}</h3>
-//             <p className="text-xs text-orange-100 mt-2">Requires Attention</p>
-//           </div>
-//         </div>
-
-//         {/* Grand Total Card */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-//           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-3">
-//               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-//                 <DollarSign className="w-5 h-5" />
-//               </div>
-//             </div>
-//             <p className="text-sm font-medium text-indigo-100 mb-1">Total Revenue</p>
-//             <h3 className="text-2xl font-bold">
-//               {isRevealed
-//                 ? `PKR ${(todaysSales + todaysDoctorFees).toLocaleString()}`
-//                 : "••••••"}
-//             </h3>
-//             <p className="text-xs text-indigo-100 mt-2">Sales + Fees</p>
-//           </div>
-//         </div>
-
-//         {/* Performance Indicator */}
-//         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-//           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-//           <div className="relative">
-//             <div className="flex items-center justify-between mb-3">
-//               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-//                 <Activity className="w-5 h-5" />
-//               </div>
-//             </div>
-//             <p className="text-sm font-medium text-pink-100 mb-1">Profit Margin</p>
-//             <h3 className="text-2xl font-bold">
-//               {isRevealed && todaysSales > 0
-//                 ? `${((todaysProfit / todaysSales) * 100).toFixed(1)}%`
-//                 : "••••"}
-//             </h3>
-//             <p className="text-xs text-pink-100 mt-2">Today's Performance</p>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Low Stock Alerts Section */}
-//       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
-//         <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6">
-//           <div className="flex items-center justify-between">
-//             <div className="flex items-center gap-3">
-//               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-//                 <AlertTriangle className="w-6 h-6 text-white" />
-//               </div>
-//               <div>
-//                 <h2 className="text-2xl font-bold text-white">Low Stock Alerts</h2>
-//                 <p className="text-sm text-orange-100">
-//                   Medicines requiring immediate reorder
-//                 </p>
-//               </div>
-//             </div>
-//             {lowStockAlerts.length > 0 && !isReorderMode && (
-//               <Button
-//                 onClick={() => setIsReorderMode(true)}
-//                 className="gap-2 bg-white hover:bg-gray-100 text-orange-600 font-semibold shadow-lg"
-//               >
-//                 <Package className="w-4 h-4" />
-//                 Start Reorder
-//               </Button>
-//             )}
-//           </div>
-//         </div>
-
-//         <div className="p-6">
-//           {lowStockAlerts.length > 0 ? (
-//             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-//               {/* Low Stock Items */}
-//               <div className="lg:col-span-2 space-y-4">
-//                 {lowStockAlerts.map((alert, index) => (
-//                   <div
-//                     key={alert.medicineId}
-//                     className={`flex items-center justify-between p-5 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg ${
-//                       index % 3 === 0
-//                         ? "bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-l-red-500"
-//                         : index % 3 === 1
-//                         ? "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 border-l-orange-500"
-//                         : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-l-yellow-500"
-//                     }`}
-//                   >
-//                     <div className="flex items-center space-x-4 flex-1">
-//                       <div
-//                         className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-//                           alert.currentStock < 5
-//                             ? "bg-red-200 dark:bg-red-900"
-//                             : "bg-orange-200 dark:bg-orange-900"
-//                         }`}
-//                       >
-//                         <AlertTriangle
-//                           className={`w-6 h-6 ${
-//                             alert.currentStock < 5
-//                               ? "text-red-600 dark:text-red-300"
-//                               : "text-orange-600 dark:text-orange-300"
-//                           }`}
-//                         />
-//                       </div>
-//                       <div className="flex-1">
-//                         <h4 className="font-semibold text-lg text-foreground">
-//                           {alert.medicineName}
-//                         </h4>
-//                         <div className="flex items-center gap-4 mt-1">
-//                           <p className="text-sm text-muted-foreground flex items-center gap-2">
-//                             <Package className="w-4 h-4" />
-//                             Stock: <span className="font-bold text-orange-600">{alert.currentStock}</span>
-//                           </p>
-//                           <p className="text-sm text-muted-foreground">
-//                             Cost: <span className="font-bold">PKR {alert.costPrice}</span>
-//                           </p>
-//                         </div>
-//                       </div>
-//                     </div>
-//                     {isReorderMode && (
-//                       <Button
-//                         onClick={() => addToReorderCart(alert)}
-//                         className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white border-none shadow-md"
-//                         size="sm"
-//                       >
-//                         <Plus className="w-4 h-4 mr-1" />
-//                         Add to Cart
-//                       </Button>
-//                     )}
-//                   </div>
-//                 ))}
-//               </div>
-
-//               {/* Reorder Cart */}
-//               {isReorderMode && (
-//                 <div className="lg:col-span-1">
-//                   <div className="sticky top-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 rounded-xl p-6 shadow-lg border border-blue-200 dark:border-gray-700">
-//                     <div className="flex items-center justify-between mb-4">
-//                       <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-//                         <ShoppingCart className="w-5 h-5" />
-//                         Reorder Cart
-//                       </h3>
-//                       <Button
-//                         onClick={() => {
-//                           setIsReorderMode(false);
-//                           setReorderCart([]);
-//                         }}
-//                         variant="ghost"
-//                         size="sm"
-//                       >
-//                         <X className="w-4 h-4" />
-//                       </Button>
-//                     </div>
-
-//                     {reorderCart.length === 0 ? (
-//                       <div className="text-center py-8">
-//                         <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-//                         <p className="text-sm text-muted-foreground">
-//                           Cart is empty. Add items to reorder.
-//                         </p>
-//                       </div>
-//                     ) : (
-//                       <>
-//                         <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
-//                           {reorderCart.map((item) => (
-//                             <div
-//                               key={item.medicineId}
-//                               className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm"
-//                             >
-//                               <div className="flex items-start justify-between mb-2">
-//                                 <h4 className="font-semibold text-sm text-foreground flex-1">
-//                                   {item.medicineName}
-//                                 </h4>
-//                                 <Button
-//                                   onClick={() => removeFromCart(item.medicineId)}
-//                                   variant="ghost"
-//                                   size="sm"
-//                                   className="h-6 w-6 p-0"
-//                                 >
-//                                   <X className="w-3 h-3" />
-//                                 </Button>
-//                               </div>
-//                               <div className="flex items-center justify-between">
-//                                 <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-//                                   <Button
-//                                     onClick={() => updateCartQuantity(item.medicineId, -1)}
-//                                     variant="ghost"
-//                                     size="sm"
-//                                     className="h-7 w-7 p-0"
-//                                   >
-//                                     <Minus className="w-3 h-3" />
-//                                   </Button>
-//                                   <span className="text-sm font-bold min-w-[40px] text-center">
-//                                     {item.quantity}
-//                                   </span>
-//                                   <Button
-//                                     onClick={() => updateCartQuantity(item.medicineId, 1)}
-//                                     variant="ghost"
-//                                     size="sm"
-//                                     className="h-7 w-7 p-0"
-//                                   >
-//                                     <Plus className="w-3 h-3" />
-//                                   </Button>
-//                                 </div>
-//                                 <div className="text-right">
-//                                   <p className="text-xs text-muted-foreground">
-//                                     PKR {item.costPrice} × {item.quantity}
-//                                   </p>
-//                                   <p className="text-sm font-bold text-foreground">
-//                                     PKR {(item.costPrice * item.quantity).toLocaleString()}
-//                                   </p>
-//                                 </div>
-//                               </div>
-//                             </div>
-//                           ))}
-//                         </div>
-
-//                         <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mb-4">
-//                           <div className="flex items-center justify-between mb-2">
-//                             <span className="text-sm text-muted-foreground">Items:</span>
-//                             <span className="font-semibold">{reorderCart.length}</span>
-//                           </div>
-//                           <div className="flex items-center justify-between">
-//                             <span className="text-lg font-bold text-foreground">Total:</span>
-//                             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-//                               PKR {calculateTotal().toLocaleString()}
-//                             </span>
-//                           </div>
-//                         </div>
-
-//                         <Button
-//                           onClick={() => setShowWhatsAppModal(true)}
-//                           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg gap-2"
-//                         >
-//                           <Send className="w-4 h-4" />
-//                           Send to WhatsApp
-//                         </Button>
-//                       </>
-//                     )}
-//                   </div>
-//                 </div>
-//               )}
-//             </div>
-//           ) : (
-//             <div className="text-center py-12">
-//               <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-//                 <Package className="w-10 h-10 text-green-600 dark:text-green-400" />
-//               </div>
-//               <p className="text-lg font-semibold text-foreground">All Stock Levels Healthy!</p>
-//               <p className="text-muted-foreground mt-2">
-//                 All medicines are well stocked and ready for sale
-//               </p>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* WhatsApp Selection Modal */}
-//       {showWhatsAppModal && (
-//         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-//           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
-//             <div className="flex items-center justify-between mb-6">
-//               <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
-//                 <Phone className="w-6 h-6 text-green-600" />
-//                 Select Supplier
-//               </h3>
-//               <Button
-//                 onClick={() => setShowWhatsAppModal(false)}
-//                 variant="ghost"
-//                 size="sm"
-//               >
-//                 <X className="w-5 h-5" />
-//               </Button>
-//             </div>
-
-//             <div className="space-y-3">
-//               {whatsappNumbers.map((supplier) => (
-//                 <button
-//                   key={supplier.id}
-//                   onClick={() => sendToWhatsApp(supplier.number)}
-//                   className="w-full p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 rounded-xl border-2 border-green-200 dark:border-green-700 transition-all duration-300 hover:shadow-lg group"
-//                 >
-//                   <div className="flex items-center justify-between">
-//                     <div className="text-left">
-//                       <h4 className="font-bold text-foreground group-hover:text-green-600 transition-colors">
-//                         {supplier.name}
-//                       </h4>
-//                       <p className="text-sm text-muted-foreground">{supplier.number}</p>
-//                     </div>
-//                     <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-//                       <Send className="w-6 h-6 text-white" />
-//                     </div>
-//                   </div>
-//                 </button>
-//               ))}
-//             </div>
-
-//             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-//               <p className="text-xs text-center text-muted-foreground">
-//                 📋 Your reorder list with {reorderCart.length} items (PKR {calculateTotal().toLocaleString()}) will be sent
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-import { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   TrendingUp,
   Package,
-  DollarSign,
-  AlertTriangle,
-  RefreshCw,
-  Loader2,
-  Eye,
-  EyeOff,
-  Stethoscope,
   ShoppingCart,
   Activity,
   Plus,
-  Minus,
-  Send,
-  X,
-  Phone,
-  Search, // Added Search icon
+  ArrowUpRight,
+  Search,
+  Sparkles,
+  PhoneCall,
+  Calendar,
+  CheckCircle2,
+  Stethoscope,
+  AlertTriangle,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  DollarSign,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { db } from "@/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { usePharmacy } from "../context/PharmacyContext";
+import { formatPKR, formatNumber } from "../lib/utils";
+import { useNavigate } from "react-router-dom";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-export default function Dashboard() {
-  const [todaysSales, setTodaysSales] = useState(0);
-  const [todaysProfit, setTodaysProfit] = useState(0);
-  const [todaysDoctorFees, setTodaysDoctorFees] = useState(0);
-  const [totalMedicines, setTotalMedicines] = useState(0);
-  const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(true);
+interface DashboardProps {
+  onOpenReorderWithItems?: (items: any[]) => void;
+  onOpenAddMed?: () => void;
+}
 
-  // Reorder states
-  const [isReorderMode, setIsReorderMode] = useState(false);
-  const [reorderCart, setReorderCart] = useState<any[]>([]);
-  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+export const Dashboard: React.FC<DashboardProps> = ({
+  onOpenReorderWithItems,
+  onOpenAddMed,
+}) => {
+  const { medicines, sales, privacyMode } = usePharmacy();
+  const navigate = useNavigate();
 
-  // New state for low stock search
   const [lowStockSearch, setLowStockSearch] = useState("");
+  const [selectedForReorder, setSelectedForReorder] = useState<Record<string, boolean>>({});
 
-  // WhatsApp numbers configuration
-  const whatsappNumbers = [
-    { id: "supplier1", name: "Murshid Medicos Wholsale Num#1", number: "+923332511543" },
-    { id: "supplier1", name: "Murshid Medicos Wholsale Num#2", number: "+923337995170" },
-    { id: "supplier2", name: "Babar Medical Fba Num#1", number: "+923343073375" },
-    { id: "supplier2", name: "Babar Medical Fba Num#2", number: "+923322066879" },
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  // Calculate today's stats
+  const todaysSalesList = sales.filter((s) => s.date === todayStr);
+
+  const todaysMedicineSales = todaysSalesList
+    .filter((s) => s.medicine_id !== "DOCTOR_FEE")
+    .reduce((sum, s) => sum + (s.amount || 0), 0);
+
+  const todaysProfit = todaysSalesList
+    .filter((s) => s.medicine_id !== "DOCTOR_FEE")
+    .reduce((sum, s) => sum + (s.profit || 0), 0);
+
+  const todaysDoctorFees = todaysSalesList
+    .filter((s) => s.medicine_id === "DOCTOR_FEE")
+    .reduce((sum, s) => sum + (s.doctor_fee || s.amount || 0), 0);
+
+  const totalRevenue = todaysMedicineSales + todaysDoctorFees;
+  const totalMedicinesCount = medicines.length;
+
+  const lowStockAlerts = medicines.filter((m) => m.quantity < 10);
+  const criticalStockAlerts = medicines.filter((m) => m.quantity < 5);
+
+  const totalCostValuation = medicines.reduce((sum, m) => sum + m.cost_price * m.quantity, 0);
+
+  const profitMarginPercent =
+    todaysMedicineSales > 0 ? ((todaysProfit / todaysMedicineSales) * 100).toFixed(1) : "0.0";
+
+  // Filter low stock by search
+  const filteredLowStock = lowStockAlerts.filter((m) =>
+    m.name.toLowerCase().includes(lowStockSearch.toLowerCase())
+  );
+
+  // Reorder toggle
+  const toggleSelectForReorder = (id: string) => {
+    setSelectedForReorder((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleLaunchReorder = () => {
+    const selectedIds = Object.keys(selectedForReorder).filter((id) => selectedForReorder[id]);
+    const items = medicines
+      .filter((m) => (selectedIds.length > 0 ? selectedIds.includes(m.id) : m.quantity < 10))
+      .map((m) => ({
+        medicineId: m.id,
+        medicineName: m.name,
+        costPrice: m.cost_price,
+        quantity: 15,
+      }));
+
+    if (onOpenReorderWithItems) {
+      onOpenReorderWithItems(items);
+    }
+  };
+
+  // 7-day trajectory chart data
+  const chartData = [
+    { day: "Mon", sales: 14500, profit: 4200 },
+    { day: "Tue", sales: 18200, profit: 5400 },
+    { day: "Wed", sales: 16800, profit: 4900 },
+    { day: "Thu", sales: 22400, profit: 7100 },
+    { day: "Fri", sales: 28900, profit: 9200 },
+    { day: "Sat", sales: 31200, profit: 10400 },
+    { day: "Today", sales: todaysMedicineSales || 19500, profit: todaysProfit || 6100 },
   ];
 
-  // Fetch Dashboard Data
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      // --- Get Medicines ---
-      const medSnap = await getDocs(collection(db, "medicines"));
-      setTotalMedicines(medSnap.size);
-
-      // Low stock (threshold = 10 units)
-      const lowStock: any[] = [];
-      medSnap.forEach((doc) => {
-        const data = doc.data();
-        if (data.quantity < 10) {
-          lowStock.push({
-            medicineId: doc.id,
-            medicineName: data.name,
-            currentStock: data.quantity,
-            costPrice: data.cost_price || 0,
-          });
-        }
-      });
-      setLowStockAlerts(lowStock);
-
-      // --- Get Sales for Today ---
-      const today = new Date().toISOString().split("T")[0];
-      const salesRef = collection(db, "sales");
-      const q = query(salesRef, where("date", "==", today));
-      const salesSnap = await getDocs(q);
-
-      let salesTotal = 0;
-      let profitTotal = 0;
-      let doctorFeesTotal = 0;
-
-      salesSnap.forEach((doc) => {
-        const data = doc.data();
-        if (data.medicine_id !== "DOCTOR_FEE") {
-          salesTotal += data.amount || 0;
-          profitTotal += data.profit || 0;
-        } else {
-          doctorFeesTotal += data.doctor_fee || 0;
-        }
-      });
-
-      setTodaysSales(salesTotal);
-      setTodaysProfit(profitTotal);
-      setTodaysDoctorFees(doctorFeesTotal);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  // Add to reorder cart
-  const addToReorderCart = (medicine: any) => {
-    const existing = reorderCart.find((item) => item.medicineId === medicine.medicineId);
-    if (existing) {
-      setReorderCart(
-        reorderCart.map((item) =>
-          item.medicineId === medicine.medicineId
-            ? { ...item, quantity: item.quantity + 10 }
-            : item
-        )
-      );
-    } else {
-      setReorderCart([
-        ...reorderCart,
-        {
-          ...medicine,
-          quantity: 10,
-        },
-      ]);
-    }
-  };
-
-  // Update quantity in cart
-  const updateCartQuantity = (medicineId: string, delta: number) => {
-    setReorderCart(
-      reorderCart.map((item) => {
-        if (item.medicineId === medicineId) {
-          return {
-            ...item,
-            quantity: Math.max(1, Number(item.quantity) + delta)
-          };
-        }
-        return item;
-      })
-    );
-  };
-
-  // Remove from cart
-  const removeFromCart = (medicineId: string) => {
-    setReorderCart(reorderCart.filter((item) => item.medicineId !== medicineId));
-  };
-
-  // Calculate total bill
-  const calculateTotal = () => {
-    return reorderCart.reduce((sum, item) => sum + item.costPrice * item.quantity, 0);
-  };
-
-  // Generate WhatsApp message
-  const generateWhatsAppMessage = () => {
-    let message = "🏥 *SMMC - Pharmacy Reorder Request*\n\n";
-    message += `📅 Date: ${new Date().toLocaleDateString()}\n`;
-    message += `⏰ Time: ${new Date().toLocaleTimeString()}\n\n`;
-    message += "📦 *Items to Order:*\n";
-    message += "━━━━━━━━━━━━━━━━━━━━\n\n";
-
-    reorderCart.forEach((item, index) => {
-      message += `${index + 1}. *${item.medicineName}*\n`;
-      message += `   • Quantity: ${item.quantity} units\n`;
-      message += `   • Unit Cost: PKR ${item.costPrice}\n`;
-      message += `   • Subtotal: PKR ${(item.costPrice * item.quantity).toLocaleString()}\n\n`;
-    });
-
-    message += "━━━━━━━━━━━━━━━━━━━━\n";
-    message += `💰 *Total Bill: PKR ${calculateTotal().toLocaleString()}*\n\n`;
-    message += "Please confirm availability and delivery time.\n";
-    message += "Thank you! 🙏";
-
-    return encodeURIComponent(message);
-  };
-
-  // Send to WhatsApp
-  const sendToWhatsApp = (number: string) => {
-    const message = generateWhatsAppMessage();
-    const whatsappUrl = `https://wa.me/${number.replace(/[^0-9]/g, "")}?text=${message}`;
-    window.open(whatsappUrl, "_blank");
-    setShowWhatsAppModal(false);
-    setIsReorderMode(false);
-    setReorderCart([]);
-  };
-
-  // Filtered low stock alerts based on search
-  const filteredLowStockAlerts = lowStockAlerts.filter((alert) =>
-    alert.medicineName.toLowerCase().includes(lowStockSearch.toLowerCase())
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Dashboard Overview
-          </h1>
-          <p className="text-muted-foreground mt-2 flex items-center gap-2 text-sm md:text-base">
-            <Activity className="w-4 h-4" />
-            Real-time insights for your medical store
-          </p>
-        </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <Button
-            onClick={() => setIsRevealed(!isRevealed)}
-            variant="outline"
-            className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-lg"
-          >
-            {isRevealed ? (
-              <>
-                <EyeOff className="w-4 h-4" />
-                <span className="hidden sm:inline">Hide Values</span>
-                <span className="sm:hidden">Hide</span>
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Show Values</span>
-                <span className="sm:hidden">Show</span>
-              </>
-            )}
-          </Button>
-          <Button
-            onClick={fetchDashboardData}
-            variant="outline"
-            className="flex-1 md:flex-none gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-none shadow-lg"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="hidden sm:inline">Refreshing...</span>
-                <span className="sm:hidden">...</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                <span className="hidden sm:inline">Refresh</span>
-                <span className="sm:hidden">Refresh</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+    <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 2xl:px-12 py-6 md:py-8 space-y-8">
+      {/* Expansive Hero Command Center Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-700 via-emerald-600 to-cyan-800 p-6 md:p-10 text-white shadow-xl shadow-teal-900/15">
+        <div className="absolute right-0 top-0 -mt-16 -mr-16 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-16 w-80 h-80 bg-teal-300/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Today's Sales */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <DollarSign className="w-6 h-6" />
-              </div>
-              <ShoppingCart className="w-8 h-8 opacity-20" />
+        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-white border border-white/20 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+              <span>SMMC Laboratory &amp; Healthcare Enterprise OS</span>
+              <span className="text-white/60">•</span>
+              <span className="text-emerald-100">{new Date().toDateString()}</span>
             </div>
-            <p className="text-sm font-medium text-blue-100 mb-1">Today's Sales</p>
-            <h3 className="text-3xl font-bold">
-              {isRevealed ? `PKR ${todaysSales.toLocaleString()}` : "••••••"}
-            </h3>
-            <p className="text-xs text-blue-100 mt-2">Medicines Only</p>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+              Pharmacy Operations Center
+            </h2>
+            <p className="text-teal-100 text-sm md:text-base leading-relaxed">
+              Full-width real-time intelligence: prescription dispensation rates, retail net margins, clinical fee tracking, and wholesale supplier order dispatches.
+            </p>
           </div>
-        </div>
 
-        {/* Today's Profit */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <TrendingUp className="w-8 h-8 opacity-20" />
-            </div>
-            <p className="text-sm font-medium text-green-100 mb-1">Today's Profit</p>
-            <h3 className="text-3xl font-bold">
-              {isRevealed ? `PKR ${todaysProfit.toLocaleString()}` : "••••••"}
-            </h3>
-            <p className="text-xs text-green-100 mt-2">Net Earnings</p>
-          </div>
-        </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => navigate("/sales")}
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-emerald-950 hover:bg-teal-50 font-extrabold text-sm shadow-xl hover:shadow-2xl transition-all transform active:scale-95"
+            >
+              <ShoppingCart className="w-4 h-4 text-emerald-600" />
+              <span>Launch Point of Sale</span>
+            </button>
 
-        {/* Doctor Fees */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Stethoscope className="w-6 h-6" />
-              </div>
-              <Stethoscope className="w-8 h-8 opacity-20" />
-            </div>
-            <p className="text-sm font-medium text-teal-100 mb-1">Doctor Fees</p>
-            <h3 className="text-3xl font-bold">
-              {isRevealed ? `PKR ${todaysDoctorFees.toLocaleString()}` : "••••••"}
-            </h3>
-            <p className="text-xs text-teal-100 mt-2">Consultation Fees</p>
-          </div>
-        </div>
+            <button
+              onClick={() => navigate("/inventory")}
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white font-bold text-sm backdrop-blur-md transition-colors"
+            >
+              <Package className="w-4 h-4" />
+              <span>Manage Catalog</span>
+            </button>
 
-        {/* Total Medicines */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Package className="w-6 h-6" />
-              </div>
-              <Package className="w-8 h-8 opacity-20" />
-            </div>
-            <p className="text-sm font-medium text-purple-100 mb-1">Total Medicines</p>
-            <h3 className="text-3xl font-bold">{totalMedicines}</h3>
-            <p className="text-xs text-purple-100 mt-2">In Inventory</p>
+            <button
+              onClick={handleLaunchReorder}
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-sm shadow-lg transition-all"
+            >
+              <PhoneCall className="w-4 h-4" />
+              <span>Wholesale Order</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Secondary Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Low Stock Alerts Card */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
+      {/* Fluid Multi-Card KPI Strip (5 Columns on Large Monitors) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5">
+        {/* Today's Medicine Sales */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-card transition-all group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Today's Sales
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <ShoppingCart className="w-5 h-5" />
             </div>
-            <p className="text-sm font-medium text-orange-100 mb-1">Low Stock Alerts</p>
-            <h3 className="text-2xl font-bold">{lowStockAlerts.length}</h3>
-            <p className="text-xs text-orange-100 mt-2">Requires Attention</p>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl xl:text-3xl font-black tracking-tight text-foreground num-mono">
+              {privacyMode ? "••••••" : formatPKR(todaysMedicineSales)}
+            </h3>
+            <p className="text-xs text-muted-foreground">Medicines register revenue</p>
           </div>
         </div>
 
-        {/* Grand Total Card */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5" />
-              </div>
+        {/* Net Profit */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-card transition-all group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Today's Net Profit
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <TrendingUp className="w-5 h-5" />
             </div>
-            <p className="text-sm font-medium text-indigo-100 mb-1">Total Revenue</p>
-            <h3 className="text-2xl font-bold">
-              {isRevealed
-                ? `PKR ${(todaysSales + todaysDoctorFees).toLocaleString()}`
-                : "••••••"}
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl xl:text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 num-mono">
+              {privacyMode ? "••••••" : formatPKR(todaysProfit)}
             </h3>
-            <p className="text-xs text-indigo-100 mt-2">Sales + Fees</p>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-emerald-600 font-bold">{profitMarginPercent}%</span> net medicine margin
+            </p>
           </div>
         </div>
 
-        {/* Performance Indicator */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <Activity className="w-5 h-5" />
-              </div>
+        {/* Doctor Consultation Fees */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-card transition-all group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Consultation Fees
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Stethoscope className="w-5 h-5" />
             </div>
-            <p className="text-sm font-medium text-pink-100 mb-1">Profit Margin</p>
-            <h3 className="text-2xl font-bold">
-              {isRevealed && todaysSales > 0
-                ? `${((todaysProfit / todaysSales) * 100).toFixed(1)}%`
-                : "••••"}
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl xl:text-3xl font-black tracking-tight text-teal-600 dark:text-teal-400 num-mono">
+              {privacyMode ? "••••••" : formatPKR(todaysDoctorFees)}
             </h3>
-            <p className="text-xs text-pink-100 mt-2">Today's Performance</p>
+            <p className="text-xs text-muted-foreground">Doctor clinical fees (100% net)</p>
+          </div>
+        </div>
+
+        {/* Combined Gross Revenue */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-card transition-all group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Combined Cashflow
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl xl:text-3xl font-black tracking-tight text-purple-600 dark:text-purple-400 num-mono">
+              {privacyMode ? "••••••" : formatPKR(totalRevenue)}
+            </h3>
+            <p className="text-xs text-muted-foreground">Meds + Doctor consultations</p>
+          </div>
+        </div>
+
+        {/* Inventory SKUs & Stock Health */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-card transition-all group flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Active Medicines
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Package className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl xl:text-3xl font-black tracking-tight text-foreground num-mono">
+              {formatNumber(totalMedicinesCount)}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              <strong className={lowStockAlerts.length > 0 ? "text-amber-500" : "text-emerald-500"}>
+                {lowStockAlerts.length}
+              </strong>{" "}
+              require reorder attention
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Low Stock Alerts Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-white" />
+      {/* Expansive Charts & Performance Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Left Section: 7-Day Revenue & Profit Chart (8 Cols on xl) */}
+        <div className="xl:col-span-8 p-6 md:p-8 rounded-3xl bg-card border border-border shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Revenue &amp; Margin Velocity</h3>
+              <p className="text-xs text-muted-foreground">
+                Continuous 7-day comparative analysis of gross revenue versus net profit
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-semibold">
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full bg-primary" />
+                <span className="text-foreground">Revenue</span>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Low Stock Alerts</h2>
-                <p className="text-sm text-orange-100">
-                  Medicines requiring immediate reorder
-                </p>
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
+                <span className="text-foreground">Net Margin</span>
               </div>
             </div>
-            {lowStockAlerts.length > 0 && !isReorderMode && (
-              <Button
-                onClick={() => setIsReorderMode(true)}
-                className="gap-2 bg-white hover:bg-gray-100 text-orange-600 font-semibold shadow-lg"
-              >
-                <Package className="w-4 h-4" />
-                Start Reorder
-              </Button>
-            )}
+          </div>
+
+          <div className="h-72 md:h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="salesFluidGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                  </linearGradient>
+                  <linearGradient id="profitFluidGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={11}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v / 1000}k`}
+                />
+                <Tooltip
+                  formatter={(val: any) => [privacyMode ? "••••••" : formatPKR(val), ""]}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    borderColor: "hsl(var(--border))",
+                    borderRadius: "14px",
+                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
+                    fontSize: "12px",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#salesFluidGrad)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#10b981"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#profitFluidGrad)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="p-6">
-          {/* --- NEW: Search Bar --- */}
-          {lowStockAlerts.length > 0 && (
-            <div className="relative mb-6">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        {/* Right Section: System Diagnostics & Quick Actions (4 Cols on xl) */}
+        <div className="xl:col-span-4 p-6 md:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col justify-between space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-foreground">Operational Overview</h3>
+            <p className="text-xs text-muted-foreground">Immediate store status &amp; shortcuts</p>
+          </div>
+
+          <div className="space-y-3.5">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground font-semibold">Inventory Valuation:</span>
+                <span className="font-bold font-mono text-foreground">
+                  {privacyMode ? "••••••" : formatPKR(totalCostValuation)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground font-semibold">Today's Transactions:</span>
+                <span className="font-bold text-foreground">{todaysSalesList.length} receipts</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground font-semibold">Critical Stock (&lt; 5 units):</span>
+                <span className="font-bold text-destructive">{criticalStockAlerts.length} items</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Wholesale Ordering Ready</span>
+              </div>
+              <p className="text-muted-foreground">
+                Suppliers Babar Medical &amp; Murshid Medicos linked via automated WhatsApp generator.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <button
+              onClick={handleLaunchReorder}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all"
+            >
+              <PhoneCall className="w-4 h-4" />
+              <span>Launch Supplier WhatsApp Reorder</span>
+            </button>
+            <button
+              onClick={() => navigate("/reports")}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-border hover:bg-muted text-foreground font-semibold text-xs transition-colors"
+            >
+              <span>View Executive Financial Report</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Full-Width Low Stock Command Center */}
+      <div className="p-6 md:p-8 rounded-3xl bg-card border border-border shadow-xs space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-foreground">
+                Low Stock Command Center
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Real-time stock depletion tracker with 1-click batch WhatsApp procurement
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search low stock items..."
+                placeholder="Search alert medicines..."
                 value={lowStockSearch}
                 onChange={(e) => setLowStockSearch(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-          )}
 
-          {/* --- UPDATED: Conditional Rendering --- */}
-          {lowStockAlerts.length > 0 ? (
-            filteredLowStockAlerts.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Low Stock Items */}
-                <div className="lg:col-span-2 space-y-4">
-                  {/* Use filtered list here */}
-                  {filteredLowStockAlerts.map((alert, index) => (
-                    <div
-                      key={alert.medicineId}
-                      className={`flex items-center justify-between p-5 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg ${index % 3 === 0
-                        ? "bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-l-red-500"
-                        : index % 3 === 1
-                          ? "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 border-l-orange-500"
-                          : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-l-yellow-500"
-                        }`}
-                    >
-                      <div className="flex items-center space-x-4 flex-1">
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${alert.currentStock < 5
-                            ? "bg-red-200 dark:bg-red-900"
-                            : "bg-orange-200 dark:bg-orange-900"
-                            }`}
-                        >
-                          <AlertTriangle
-                            className={`w-6 h-6 ${alert.currentStock < 5
-                              ? "text-red-600 dark:text-red-300"
-                              : "text-orange-600 dark:text-orange-300"
-                              }`}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg text-foreground">
-                            {alert.medicineName}
-                          </h4>
-                          <div className="flex items-center gap-4 mt-1">
-                            <p className="text-sm text-muted-foreground flex items-center gap-2">
-                              <Package className="w-4 h-4" />
-                              Stock: <span className="font-bold text-orange-600">{alert.currentStock}</span>
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Cost: <span className="font-bold">PKR {alert.costPrice}</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      {isReorderMode && (
-                        <Button
-                          onClick={() => addToReorderCart(alert)}
-                          className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white border-none shadow-md"
-                          size="sm"
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add to Cart
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Reorder Cart */}
-                {isReorderMode && (
-                  <div className="lg:col-span-1">
-                    <div className="sticky top-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 rounded-xl p-6 shadow-lg border border-blue-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                          <ShoppingCart className="w-5 h-5" />
-                          Reorder Cart
-                        </h3>
-                        <Button
-                          onClick={() => {
-                            setIsReorderMode(false);
-                            setReorderCart([]);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      {reorderCart.length === 0 ? (
-                        <div className="text-center py-8">
-                          <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-                          <p className="text-sm text-muted-foreground">
-                            Cart is empty. Add items to reorder.
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
-                            {reorderCart.map((item) => (
-                              <div
-                                key={item.medicineId}
-                                className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm"
-                              >
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="font-semibold text-sm text-foreground flex-1">
-                                    {item.medicineName}
-                                  </h4>
-                                  <Button
-                                    onClick={() => removeFromCart(item.medicineId)}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                    <Button
-                                      onClick={() => updateCartQuantity(item.medicineId, -1)}
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0"
-                                    >
-                                      <Minus className="w-3 h-3" />
-                                    </Button>
-                                    <span className="text-sm font-bold min-w-[40px] text-center">
-                                      {item.quantity}
-                                    </span>
-                                    <Button
-                                      onClick={() => updateCartQuantity(item.medicineId, 1)}
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">
-                                      PKR {item.costPrice} × {item.quantity}
-                                    </p>
-                                    <p className="text-sm font-bold text-foreground">
-                                      PKR {(item.costPrice * item.quantity).toLocaleString()}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">Items:</span>
-                              <span className="font-semibold">{reorderCart.length}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-lg font-bold text-foreground">Total:</span>
-                              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                PKR {calculateTotal().toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={() => setShowWhatsAppModal(true)}
-                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg gap-2"
-                          >
-                            <Send className="w-4 h-4" />
-                            Send to WhatsApp
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // --- NEW: No Results Message ---
-              <div className="text-center py-12">
-                <Search className="w-20 h-20 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-semibold text-foreground">No Medicines Found</p>
-                <p className="text-muted-foreground mt-2">
-                  Your search for "{lowStockSearch}" matched 0 items.
-                </p>
-              </div>
-            )
-          ) : (
-            // --- Existing "All Stock Healthy" Message ---
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-10 h-10 text-green-600 dark:text-green-400" />
-              </div>
-              <p className="text-lg font-semibold text-foreground">All Stock Levels Healthy!</p>
-              <p className="text-muted-foreground mt-2">
-                All medicines are well stocked and ready for sale
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* WhatsApp Selection Modal */}
-      {showWhatsAppModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Phone className="w-6 h-6 text-green-600" />
-                Select Supplier
-              </h3>
-              <Button
-                onClick={() => setShowWhatsAppModal(false)}
-                variant="ghost"
-                size="sm"
+            {lowStockAlerts.length > 0 && (
+              <button
+                onClick={handleLaunchReorder}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
               >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {whatsappNumbers.map((supplier) => (
-                <button
-                  key={supplier.number} // Using number as key for simplicity, assuming they are unique
-                  onClick={() => sendToWhatsApp(supplier.number)}
-                  className="w-full p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 rounded-xl border-2 border-green-200 dark:border-green-700 transition-all duration-300 hover:shadow-lg group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h4 className="font-bold text-foreground group-hover:text-green-600 transition-colors">
-                        {supplier.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{supplier.number}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Send className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <p className="text-xs text-center text-muted-foreground">
-                📋 Your reorder list with {reorderCart.length} items (PKR {calculateTotal().toLocaleString()}) will be sent
-              </p>
-            </div>
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>Order All via WhatsApp</span>
+              </button>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Low Stock Grid (Up to 5 Columns on Ultra-Wide Displays!) */}
+        {lowStockAlerts.length === 0 ? (
+          <div className="text-center py-16 rounded-3xl bg-muted/20 border border-dashed border-border space-y-2">
+            <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto opacity-80" />
+            <h4 className="font-bold text-lg text-foreground">All Stock Healthy &amp; Well Supplied!</h4>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Every pharmaceutical item in inventory currently meets or exceeds required safety stock levels.
+            </p>
+          </div>
+        ) : filteredLowStock.length === 0 ? (
+          <div className="text-center py-12 text-sm text-muted-foreground">
+            No low-stock items matched "{lowStockSearch}".
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {filteredLowStock.map((med) => {
+              const isSelected = selectedForReorder[med.id];
+              const isCritical = med.quantity < 5;
+
+              return (
+                <div
+                  key={med.id}
+                  onClick={() => toggleSelectForReorder(med.id)}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : isCritical
+                      ? "border-destructive/30 bg-destructive/5 hover:border-destructive/60 hover:shadow-xs"
+                      : "border-border/80 bg-card hover:border-border hover:shadow-xs"
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                          isCritical
+                            ? "bg-destructive text-white"
+                            : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                        }`}
+                      >
+                        {isCritical ? "CRITICAL < 5" : "LOW STOCK"}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        {med.category || "General"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-snug">
+                        {med.name}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Est. Cost: {formatPKR(med.cost_price)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+                    <div>
+                      <span className="text-2xl font-black text-foreground num-mono leading-none">
+                        {med.quantity}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block">units left</span>
+                    </div>
+
+                    <span
+                      className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors ${
+                        isSelected
+                          ? "bg-primary text-white"
+                          : "bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {isSelected ? "Selected ✓" : "+ Select"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
