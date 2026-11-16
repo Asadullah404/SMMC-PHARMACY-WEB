@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Calendar,
   FileText,
@@ -12,9 +12,12 @@ import {
   Layers,
   ArrowUpRight,
   Filter,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { usePharmacy } from "../context/PharmacyContext";
-import { formatPKR } from "../lib/utils";
+import { formatPKR, formatLocalDate, getTodayDateString, cn } from "../lib/utils";
+import { SaleRecord } from "../types/medical";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -30,44 +33,68 @@ import {
 import { toast } from "sonner";
 
 export const Reports: React.FC = () => {
-  const { sales, privacyMode } = usePharmacy();
+  const { privacyMode, fetchSalesByDateRange } = usePharmacy();
 
   // Date Range state
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayDateString();
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [reportType, setReportType] = useState<"sales" | "profit" | "topMeds">("sales");
+  const [reportSales, setReportSales] = useState<SaleRecord[]>([]);
+  const [isLoadingSales, setIsLoadingSales] = useState(false);
+
+  // Load Report Data for the selected date range
+  const loadReportData = useCallback(
+    async (start: string, end: string) => {
+      if (!start || !end || start > end) return;
+      setIsLoadingSales(true);
+      try {
+        const data = await fetchSalesByDateRange(start, end);
+        setReportSales(data);
+      } catch (err) {
+        console.error("Failed to load report data:", err);
+        toast.error("Failed to load reporting data");
+      } finally {
+        setIsLoadingSales(false);
+      }
+    },
+    [fetchSalesByDateRange]
+  );
+
+  useEffect(() => {
+    loadReportData(startDate, endDate);
+  }, [startDate, endDate, loadReportData]);
 
   // Quick Preset Helper
   const applyPreset = (preset: "today" | "yesterday" | "7days" | "30days" | "month") => {
     const now = new Date();
-    const endStr = now.toISOString().split("T")[0];
+    const endStr = formatLocalDate(now);
     setEndDate(endStr);
 
     if (preset === "today") {
       setStartDate(endStr);
     } else if (preset === "yesterday") {
-      const y = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-      setStartDate(y);
-      setEndDate(y);
+      const y = new Date();
+      y.setDate(y.getDate() - 1);
+      const yStr = formatLocalDate(y);
+      setStartDate(yStr);
+      setEndDate(yStr);
     } else if (preset === "7days") {
-      const d7 = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-      setStartDate(d7);
+      const d7 = new Date();
+      d7.setDate(d7.getDate() - 7);
+      setStartDate(formatLocalDate(d7));
     } else if (preset === "30days") {
-      const d30 = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
-      setStartDate(d30);
+      const d30 = new Date();
+      d30.setDate(d30.getDate() - 30);
+      setStartDate(formatLocalDate(d30));
     } else if (preset === "month") {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-        .toISOString()
-        .split("T")[0];
-      setStartDate(firstDay);
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      setStartDate(formatLocalDate(firstDay));
     }
   };
 
   // Filter Sales by Date Range
-  const filteredSales = useMemo(() => {
-    return sales.filter((s) => s.date >= startDate && s.date <= endDate);
-  }, [sales, startDate, endDate]);
+  const filteredSales = reportSales;
 
   const medicineSales = filteredSales.filter((s) => s.medicine_id !== "DOCTOR_FEE");
   const doctorFees = filteredSales.filter((s) => s.medicine_id === "DOCTOR_FEE");
@@ -101,15 +128,16 @@ export const Reports: React.FC = () => {
 
   // Daily Chart Aggregation
   const dailyChartData = useMemo(() => {
-    const dayMap: Record<string, { date: string; sales: number; profit: number }> = {};
+    const dayMap: Record<string, { fullDate: string; date: string; sales: number; profit: number }> = {};
     filteredSales.forEach((s) => {
+      if (!s.date) return;
       if (!dayMap[s.date]) {
-        dayMap[s.date] = { date: s.date.slice(5), sales: 0, profit: 0 };
+        dayMap[s.date] = { fullDate: s.date, date: s.date.slice(5), sales: 0, profit: 0 };
       }
       dayMap[s.date].sales += s.amount;
       dayMap[s.date].profit += s.profit;
     });
-    return Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date));
+    return Object.values(dayMap).sort((a, b) => a.fullDate.localeCompare(b.fullDate));
   }, [filteredSales]);
 
   // Export PDF Report
@@ -218,6 +246,16 @@ export const Reports: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => loadReportData(startDate, endDate)}
+            disabled={isLoadingSales}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold border border-border transition-colors hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+            title="Refresh report data"
+          >
+            <RefreshCw className={cn("w-4 h-4 text-primary", isLoadingSales && "animate-spin")} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+
           <button
             onClick={exportExcelReport}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold border border-border transition-colors hover:scale-[1.02] active:scale-[0.98]"
@@ -427,7 +465,16 @@ export const Reports: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
-                    {filteredSales.length === 0 ? (
+                    {isLoadingSales ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-12 text-muted-foreground">
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            <span>Loading report transactions from database...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredSales.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="text-center py-12 text-muted-foreground">
                           No transactions found within this date range.
@@ -529,7 +576,16 @@ export const Reports: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {topMedicinesList.length === 0 ? (
+                  {isLoadingSales ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-12 text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                          <span>Loading top selling medicines...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : topMedicinesList.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center py-12 text-muted-foreground">
                         No sales data found for this period.

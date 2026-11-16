@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   FileBarChart2,
   TrendingUp,
+  LineChart,
   ChevronLeft,
   ChevronRight,
   Sun,
@@ -64,6 +65,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed })
       title: "Reports",
       path: "/reports",
       icon: FileBarChart2,
+    },
+    {
+      title: "Sales Intelligence",
+      path: "/analytics",
+      icon: LineChart,
+      badge: "BI",
+      badgeVariant: "neutral" as const,
     },
     {
       title: "Demand Analytics",

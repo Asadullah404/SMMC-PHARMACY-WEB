@@ -7,6 +7,7 @@ import {
   FileBarChart2,
   Menu,
   TrendingUp,
+  LineChart,
   X,
   Eye,
   EyeOff,
@@ -131,14 +132,23 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({ onOpenReorder }) => 
             </div>
 
             {/* Quick Links */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
+              <NavLink
+                to="/analytics"
+                onClick={() => setDrawerOpen(false)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary text-xs font-bold text-center"
+              >
+                <LineChart className="w-4 h-4 mb-1" />
+                <span className="truncate w-full">Sales BI</span>
+              </NavLink>
+
               <NavLink
                 to="/demand"
                 onClick={() => setDrawerOpen(false)}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border/50 text-foreground text-sm font-medium"
+                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-muted/40 hover:bg-muted border border-border/50 text-foreground text-xs font-medium text-center"
               >
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span>Demand Analysis</span>
+                <TrendingUp className="w-4 h-4 text-emerald-500 mb-1" />
+                <span className="truncate w-full">Demand</span>
               </NavLink>
 
               <button
@@ -146,10 +156,10 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({ onOpenReorder }) => 
                   setDrawerOpen(false);
                   if (onOpenReorder) onOpenReorder();
                 }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border/50 text-foreground text-sm font-medium"
+                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-muted/40 hover:bg-muted border border-border/50 text-foreground text-xs font-medium text-center"
               >
-                <PhoneCall className="w-4 h-4 text-emerald-500" />
-                <span>Supplier Orders</span>
+                <PhoneCall className="w-4 h-4 text-primary mb-1" />
+                <span className="truncate w-full">Suppliers</span>
               </button>
             </div>
 

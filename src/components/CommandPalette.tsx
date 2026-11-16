@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   FileBarChart2,
   TrendingUp,
+  LineChart,
   LayoutDashboard,
   Plus,
   PhoneCall,
@@ -58,6 +59,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { title: "Inventory Catalog", path: "/inventory", icon: Package },
     { title: "Point of Sale (POS)", path: "/sales", icon: ShoppingCart },
     { title: "Financial Reports", path: "/reports", icon: FileBarChart2 },
+    { title: "Sales Intelligence & BI", path: "/analytics", icon: LineChart },
     { title: "Demand Analysis", path: "/demand", icon: TrendingUp },
   ].filter((a) => a.title.toLowerCase().includes(query.toLowerCase()));
 

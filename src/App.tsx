@@ -17,6 +17,7 @@ import { Inventory } from "./pages/Inventory";
 import { Sales } from "./pages/Sales";
 import { Reports } from "./pages/Reports";
 import { Demand } from "./pages/Demand";
+import { BusinessIntelligence } from "./pages/BusinessIntelligence";
 import { Login } from "./pages/Login";
 import { ContactDeveloper } from "./pages/ContactDeveloper";
 import { NotFound } from "./pages/NotFound";
@@ -83,6 +84,11 @@ const MainLayout: React.FC = () => {
           title: "Demand Analytics",
           subtitle: "Medicine sales velocity and volume share rankings",
         };
+      case "/analytics":
+        return {
+          title: "Business Intelligence & Sales Analytics",
+          subtitle: "Enterprise revenue modeling, hourly velocity, weekday heatmaps, and sales forecasting",
+        };
       default:
         return { title: "SMMC Pharmacy", subtitle: "" };
     }
@@ -145,6 +151,7 @@ const MainLayout: React.FC = () => {
             <Route path="/sales" element={<Sales />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/demand" element={<Demand />} />
+            <Route path="/analytics" element={<BusinessIntelligence />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

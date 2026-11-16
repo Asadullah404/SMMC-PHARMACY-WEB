@@ -18,6 +18,7 @@ import { Medicine, SaleRecord, Prescription, CartItem, SupplierContact } from ".
 import { initialMedicines, defaultSuppliers, mockPrescriptions } from "../data/mockData";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { getTodayDateString } from "../lib/utils";
 
 interface PharmacyContextType {
   medicines: Medicine[];
@@ -43,6 +44,7 @@ interface PharmacyContextType {
     prescriptionId?: string | null
   ) => Promise<boolean>;
   reverseSale: (sale: SaleRecord) => Promise<boolean>;
+  fetchSalesByDateRange: (startDate: string, endDate: string) => Promise<SaleRecord[]>;
   // Prescriptions
   markPrescriptionProcessed: (id: string) => Promise<void>;
   // Backup & Import
@@ -158,7 +160,7 @@ export const PharmacyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // 2. Fetch Sales (Today and recent)
       const salesSnap = await getDocs(
-        query(collection(db, "sales"), orderBy("date", "desc"), limit(200))
+        query(collection(db, "sales"), orderBy("date", "desc"), limit(500))
       );
       if (!salesSnap.empty) {
         const fetchedSales: SaleRecord[] = salesSnap.docs.map((docSnap) => {
@@ -172,7 +174,7 @@ export const PharmacyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             retail_price: Number(d.retail_price) || 0,
             amount: Number(d.amount) || 0,
             profit: Number(d.profit) || 0,
-            date: d.date || new Date().toISOString().split("T")[0],
+            date: d.date || getTodayDateString(),
             timestamp: d.timestamp,
             doctor_fee: Number(d.doctor_fee) || 0,
             customer_name: d.customer_name || "",
@@ -394,7 +396,7 @@ export const PharmacyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayDateString();
       const newSaleRecords: SaleRecord[] = [];
 
       // 1. Process medicines in cart
@@ -560,6 +562,57 @@ export const PharmacyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Fetch sales for any specific date range (for reporting & analytics)
+  const fetchSalesByDateRange = useCallback(
+    async (startDate: string, endDate: string): Promise<SaleRecord[]> => {
+      if (!isFirebaseConfigured) {
+        return sales.filter((s) => s.date >= startDate && s.date <= endDate);
+      }
+
+      try {
+        const q = query(
+          collection(db, "sales"),
+          where("date", ">=", startDate),
+          where("date", "<=", endDate),
+          orderBy("date", "desc")
+        );
+        const snap = await getDocs(q);
+        const remoteSales: SaleRecord[] = snap.docs.map((docSnap) => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            medicine_id: d.medicine_id || "",
+            medicine_name: d.medicine_name || "Unknown",
+            quantity: Number(d.quantity) || 0,
+            cost_price: Number(d.cost_price) || 0,
+            retail_price: Number(d.retail_price) || 0,
+            amount: Number(d.amount) || 0,
+            profit: Number(d.profit) || 0,
+            date: d.date || "",
+            timestamp: d.timestamp,
+            doctor_fee: Number(d.doctor_fee) || 0,
+            customer_name: d.customer_name || "",
+          };
+        });
+
+        // Merge any locally added sales in current session that match the range and aren't in remoteSales
+        const remoteIds = new Set(remoteSales.map((s) => s.id));
+        const localUnsynced = sales.filter(
+          (s) => s.date >= startDate && s.date <= endDate && !remoteIds.has(s.id)
+        );
+
+        const combined = [...remoteSales, ...localUnsynced].sort((a, b) =>
+          b.date.localeCompare(a.date)
+        );
+        return combined;
+      } catch (err) {
+        console.error("Error fetching sales by date range from Firestore:", err);
+        return sales.filter((s) => s.date >= startDate && s.date <= endDate);
+      }
+    },
+    [sales]
+  );
+
   const markPrescriptionProcessed = async (id: string) => {
     try {
       if (isFirebaseConfigured) {
@@ -700,6 +753,7 @@ export const PharmacyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         bulkUpdateStock,
         processSale,
         reverseSale,
+        fetchSalesByDateRange,
         markPrescriptionProcessed,
         exportDatabaseJSON,
         restoreDatabaseJSON,
