@@ -104,7 +104,6 @@ export const Reports: React.FC = () => {
   const totalMedicineProfit = medicineSales.reduce((sum, s) => sum + s.profit, 0);
   const totalDoctorFees = doctorFees.reduce((sum, s) => sum + (s.doctor_fee || s.amount), 0);
   const grandTotalRevenue = totalMedicineSales + totalDoctorFees;
-  const grandTotalProfit = totalMedicineProfit + totalDoctorFees;
 
   const profitMarginPercent =
     totalMedicineSales > 0 ? ((totalMedicineProfit / totalMedicineSales) * 100).toFixed(1) : "0.0";
@@ -135,7 +134,9 @@ export const Reports: React.FC = () => {
         dayMap[s.date] = { fullDate: s.date, date: s.date.slice(5), sales: 0, profit: 0 };
       }
       dayMap[s.date].sales += s.amount;
-      dayMap[s.date].profit += s.profit;
+      if (s.medicine_id !== "DOCTOR_FEE") {
+        dayMap[s.date].profit += s.profit;
+      }
     });
     return Object.values(dayMap).sort((a, b) => a.fullDate.localeCompare(b.fullDate));
   }, [filteredSales]);
@@ -162,13 +163,13 @@ export const Reports: React.FC = () => {
       // KPI summary table
       autoTable(doc, {
         startY: 28,
-        head: [["Total Medicine Sales", "Medicine Profit", "Doctor Fees", "Grand Combined Revenue", "Total Net Profit"]],
+        head: [["Medicine Sales", "Medicine Net Profit", "Doctor Consultation Fees", "Grand Combined Revenue", "Net Margin %"]],
         body: [[
           formatPKR(totalMedicineSales),
           formatPKR(totalMedicineProfit),
           formatPKR(totalDoctorFees),
           formatPKR(grandTotalRevenue),
-          formatPKR(grandTotalProfit),
+          `${profitMarginPercent}%`,
         ]],
         theme: "grid",
         headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: "bold", fontSize: 8 },
@@ -397,17 +398,17 @@ export const Reports: React.FC = () => {
         <div className="p-5 rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 shadow-xs hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Grand Total Profit
+              Grand Total Revenue
             </span>
             <div className="w-8 h-8 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl xl:text-3xl font-black tracking-tight text-primary mt-3 num-mono">
-            {privacyMode ? "••••••" : formatPKR(grandTotalProfit)}
+            {privacyMode ? "••••••" : formatPKR(grandTotalRevenue)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Revenue: {privacyMode ? "••••••" : formatPKR(grandTotalRevenue)}
+            Medicine Profit: {privacyMode ? "••••••" : formatPKR(totalMedicineProfit)}
           </p>
         </div>
       </div>

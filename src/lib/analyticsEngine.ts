@@ -381,8 +381,11 @@ export function computeExecutiveKPIs(
   });
 
   const netRevenue = Math.max(0, currentTotal - currentRefunds);
-  const grossProfit = sumProfit(currentSales);
-  const profitMarginPercent = currentTotal > 0 ? (grossProfit / currentTotal) * 100 : 0;
+  // Calculate medicine/product gross profit strictly excluding doctor fees
+  const currentMedSales = currentSales.filter((s) => s.medicine_id !== "DOCTOR_FEE");
+  const grossProfit = currentMedSales.reduce((sum, s) => sum + (s.profit || 0), 0);
+  const medicineRevenue = currentMedSales.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const profitMarginPercent = medicineRevenue > 0 ? (grossProfit / medicineRevenue) * 100 : 0;
 
   return {
     totalRevenue: currentTotal,

@@ -271,7 +271,9 @@ export const BusinessIntelligence: React.FC = () => {
           map[s.date] = { date: s.date.slice(5), fullDate: s.date, revenue: 0, profit: 0, cumulative: 0 };
         }
         map[s.date].revenue += s.amount || 0;
-        map[s.date].profit += s.profit || 0;
+        if (s.medicine_id !== "DOCTOR_FEE") {
+          map[s.date].profit += s.profit || 0;
+        }
       });
 
       const sorted = Object.values(map).sort((a, b) => a.fullDate.localeCompare(b.fullDate));
@@ -295,7 +297,9 @@ export const BusinessIntelligence: React.FC = () => {
           map[key] = { date: key, fullDate: s.date, revenue: 0, profit: 0 };
         }
         map[key].revenue += s.amount || 0;
-        map[key].profit += s.profit || 0;
+        if (s.medicine_id !== "DOCTOR_FEE") {
+          map[key].profit += s.profit || 0;
+        }
       });
       return Object.values(map).sort((a, b) => a.fullDate.localeCompare(b.fullDate));
     }
@@ -308,7 +312,9 @@ export const BusinessIntelligence: React.FC = () => {
         map[mKey] = { date: mKey, fullDate: s.date, revenue: 0, profit: 0 };
       }
       map[mKey].revenue += s.amount || 0;
-      map[mKey].profit += s.profit || 0;
+      if (s.medicine_id !== "DOCTOR_FEE") {
+        map[mKey].profit += s.profit || 0;
+      }
     });
     return Object.values(map).sort((a, b) => a.fullDate.localeCompare(b.fullDate));
   }, [currentSales, trendGranularity]);
@@ -328,8 +334,8 @@ export const BusinessIntelligence: React.FC = () => {
       const kpiRows = [
         { Metric: "Analysis Period", Value: `${startDate} to ${endDate}` },
         { Metric: "Total Gross Revenue (PKR)", Value: kpis.totalRevenue },
-        { Metric: "Total Net Profit (PKR)", Value: kpis.grossProfit },
-        { Metric: "Net Profit Margin (%)", Value: `${kpis.profitMarginPercent.toFixed(1)}%` },
+        { Metric: "Medicine Net Profit (PKR)", Value: kpis.grossProfit },
+        { Metric: "Medicine Profit Margin (%)", Value: `${kpis.profitMarginPercent.toFixed(1)}%` },
         { Metric: "Total Transactions", Value: kpis.totalTransactions },
         { Metric: "Average Transaction Value (PKR)", Value: Math.round(kpis.averageTransactionValue) },
         { Metric: "Average Daily Revenue (PKR)", Value: Math.round(kpis.averageDailyRevenue) },
@@ -421,7 +427,7 @@ export const BusinessIntelligence: React.FC = () => {
       // Section 1: Executive KPI Overview
       autoTable(doc, {
         startY: 30,
-        head: [["Gross Revenue", "Net Profit", "Margin", "Transactions", "Avg Basket (ATV)", "Doctor Fees"]],
+        head: [["Gross Revenue", "Medicine Net Profit", "Margin", "Transactions", "Avg Basket (ATV)", "Doctor Fees"]],
         body: [[
           formatPKR(kpis.totalRevenue),
           formatPKR(kpis.grossProfit),
@@ -692,7 +698,7 @@ export const BusinessIntelligence: React.FC = () => {
         <div className="p-5 rounded-3xl bg-card border border-border shadow-xs hover:border-emerald-500/40 transition-colors flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Net Gross Profit
+              Medicine Net Profit
             </span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
@@ -704,7 +710,7 @@ export const BusinessIntelligence: React.FC = () => {
             </p>
             <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
               <span className="font-bold text-foreground">{kpis.profitMarginPercent.toFixed(1)}%</span>
-              <span className="text-[11px]">aggregate margin</span>
+              <span className="text-[11px]">medicine net margin</span>
             </div>
           </div>
         </div>
